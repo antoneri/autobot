@@ -32,7 +32,7 @@ sub bot {
             alternativ(e?)\W?medicin(e?)
             )/ix) {
         my $match = $1;
-        $action = ucfirst($1) . " är skitsnack.";
+        $action = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
         my $dice = sprintf "%d", int(rand(6)) + 1;
         $action = "Tärningen visar: $dice";
