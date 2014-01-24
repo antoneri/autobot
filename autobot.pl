@@ -16,8 +16,10 @@ $VERSION = "0.1";
 sub bot {
     my ($server, $msg, $nick, $address, $target) = @_;
 
+    my $action = 0;
+
     if ($msg =~ /^varför/i) {
-        $server->command("MSG $target $nick: Fråga Håkan.");
+        $action = "$nick: Fråga Håkan.";
     } elsif ($msg =~
             /(
             astrolog(i|y)|
@@ -30,17 +32,27 @@ sub bot {
             alternativ(e?)\W?medicin(e?)
             )/ix) {
         my $match = $1;
-        $server->command("MSG $target ". ucfirst($match) ." är skitsnack.");
+        $action = ucfirst($1) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
-        my $rand = sprintf "%d", int(rand(6)) + 1;
-        $server->command("MSG $target Tärningen visar: $rand");
-    } elsif ($msg =~ /((https?:\/\/)?(www\.)?youtu.?be\.?[a-z]{0,3}\/(watch\?v=)?[-_a-z0-9]+[^#\&\?])/i) {
+        my $dice = sprintf "%d", int(rand(6)) + 1;
+        $action = "Tärningen visar: $dice";
+    } elsif ($msg =~
+            /(
+            (https?:\/\/)?
+            (www\.)?
+            youtu.?be\.?
+            [a-z]{0,3}
+            \/(watch\?v=)?
+            [-_a-z0-9]+
+            [^#\&\?]
+            )/ix) {
         my $match = $1;
-        my $title = youtube($match) or return;
-        $server->command("MSG $target $title");
+        $action = youtube($match);
     } elsif ($nick == "Trivia" && $msg =~ /author/i) {
-        $server->command("MSG $target john steinbeck");
+        $action = "john steinbeck";
     }
+
+    $server->command("MSG $target $action") if $action;
     return;
 }
 
@@ -52,9 +64,11 @@ sub youtube {
     $useragent->env_proxy;
 
     my $response = $useragent->get($url);
-    if ($response->is_success) {
-        return "[YouTube] $1" if ($title =~ /(.+)-.youtube$/i) or return 0;
+    if ($response->is_success && $response->title() =~ /(.+)-.youtube$/i) {
+        return "[YouTube] $1";
     }
+
+    return 0;
 }
 
 Irssi::signal_add('message public', 'bot');
