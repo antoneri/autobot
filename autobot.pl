@@ -13,7 +13,7 @@ $VERSION = "0.1";
     url         => "http://www.github.com/antoneri/irssi-scripts/"
 );
 
-sub bot {
+sub autobot {
     my ($server, $msg, $nick, $address, $target) = @_;
 
     my $action = 0;
@@ -71,4 +71,4 @@ sub youtube {
     return 0;
 }
 
-Irssi::signal_add('message public', 'bot');
+Irssi::signal_add('message public', 'autobot');
