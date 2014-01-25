@@ -31,7 +31,6 @@ sub autobot {
             kinesiolog(i|y)|
             alternativ(e?)\W?medicin(e?)
             )/ix) {
-        my $match = $1;
         $action = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
         my $dice = sprintf "%d", int(rand(6)) + 1;
@@ -46,8 +45,7 @@ sub autobot {
             [-_a-z0-9]+
             [^#\&\?]
             )/ix) {
-        my $match = $1;
-        $action = youtube($match);
+        $action = youtube($1);
     } elsif ($nick == "Trivia" && $msg =~ /author/i) {
         $action = "john steinbeck";
     }
