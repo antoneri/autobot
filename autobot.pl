@@ -46,9 +46,8 @@ sub autobot {
             [^#\&\?]
             )/ix) {
         $action = youtube($1);
-    } elsif ($msg =~ /
-            \b
-            (
+    } elsif ($msg =~
+            /(
                 (?:
                     [a-z][\w-]+:
                     (?:
@@ -69,9 +68,7 @@ sub autobot {
                 (?:
                     \(([^\s()<>]+|(\([^\s()<>]+\)))*\)
                 )
-            )
-            \b
-            /ix) {
+            )/ix) {
        $action = url($1);
     } elsif ($nick == "Trivia" && $msg =~ /author/i) {
         $action = "john steinbeck";
