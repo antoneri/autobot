@@ -47,6 +47,8 @@ sub autobot {
         $response = youtube($1);
     } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
         $response = "john steinbeck";
+    } elsif ($msg =~ /^!nt (.*)$/) {
+        $response = nisetango($1);
     }
 
     $server->command("MSG $target $response") if $response;
@@ -66,6 +68,42 @@ sub youtube {
     }
 
     return 0;
+}
+
+sub nisetango {
+    my ($input) = @_;
+
+    $input =~ s/(
+        [bfjkmqvwxz]+(?!\b) # any 'consonants'
+        |
+        c+(?![hk]|\b) # ch, ck
+        |
+        d+(?![j]|\b) # dj
+        |
+        g+(?![j]|\b) # gj
+        |
+        l+(?![j]|\b) # lj
+        |
+        n+(?![gd]|\b) # ng, nd
+        |
+        p+(?![h]) # ph, word boundary
+        |
+        r+ # word boundary
+        |
+        s+(?![chk]|\b) # sc, sh, sk
+        |
+        t+(?![ij]|\b) # ti, tj
+        )
+        (?! # not followed by
+        \1 # the same as captured above
+        |
+        [aeiouyåäö] # a vowel
+        )/\1u/ix;
+
+    $input =~ s/(?<!l)l(?!l|\b)/r/i;
+    $input =~ s/(?<!u)e\b/u/i;
+
+    return uc $input;
 }
 
 Irssi::signal_add('message public', 'autobot');
