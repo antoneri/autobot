@@ -10,7 +10,7 @@ $VERSION = "0.1";
     date        => "2014-01-23",
     description => "Auto reply IRC-bot/Race of shapeshifting robots.",
     license     => "BSD 2-clause",
-    url         => "http://www.github.com/antoneri/autobot/"
+    url         => "http://www.github.com/antoneri/irssi-scripts/"
 );
 
 sub autobot {
@@ -46,33 +46,6 @@ sub autobot {
             [^#\&\?]
             )/ix) {
         $action = youtube($1);
-    } elsif ($msg =~ /
-            \b
-            (
-                (?:
-                    [a-z][\w-]+:
-                    (?:
-                        \/{1,3}
-                        |
-                    [a-z0-9%]
-                    )
-                    |
-                    www\d{0,3}[.]
-                    |
-                    [a-z0-9.\-]+[.][a-z]{2,4}\/
-                )
-                (?:
-                    [^\s()<>]+
-                    |
-                    \(([^\s()<>]+|(\([^\s()<>]+\)))*\)
-                )+
-                (?:
-                    \(([^\s()<>]+|(\([^\s()<>]+\)))*\)
-                )
-            )
-            \b
-            /ix) {
-       $action = url($1);
     } elsif ($nick == "Trivia" && $msg =~ /author/i) {
         $action = "john steinbeck";
     }
@@ -91,21 +64,6 @@ sub youtube {
     my $response = $useragent->get($url);
     if ($response->is_success && $response->title() =~ /(.+)-.youtube$/i) {
         return "[YouTube] $1";
-    }
-
-    return 0;
-}
-
-sub url {
-    my ($url) = @_;
-
-    my $useragent = LWP::UserAgent->new;
-    $useragent->timeout(3);
-    $useragent->env_proxy;
-
-    my $response = $useragent->get($url);
-    if ($response->is_success) {
-        return $response->title();
     }
 
     return 0;
