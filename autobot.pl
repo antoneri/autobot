@@ -10,7 +10,7 @@ $VERSION = "0.1";
     date        => "2014-01-23",
     description => "Auto reply IRC-bot/Race of shapeshifting robots.",
     license     => "BSD 2-clause",
-    url         => "http://www.github.com/antoneri/irssi-scripts/"
+    url         => "http://www.github.com/antoneri/autobot/"
 );
 
 sub autobot {
