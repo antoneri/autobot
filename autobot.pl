@@ -33,8 +33,7 @@ sub autobot {
             )/ix) {
         $action = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
-        my $dice = sprintf "%d", int(rand(6)) + 1;
-        $action = "Tärningen visar: $dice";
+        $action = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
     } elsif ($msg =~
             /(
             (https?:\/\/)?
