@@ -16,10 +16,10 @@ $VERSION = "0.1";
 sub autobot {
     my ($server, $msg, $nick, $address, $target) = @_;
 
-    my $action = 0;
+    my $response = 0;
 
     if ($msg =~ /^varför/i) {
-        $action = "$nick: Fråga Håkan.";
+        $response = "$nick: Fråga Håkan.";
     } elsif ($msg =~
             /(
             astrolog(i|y)|
@@ -31,9 +31,9 @@ sub autobot {
             kinesiolog(i|y)|
             alternativ(e?)\W?medicin(e?)
             )/ix) {
-        $action = ucfirst(lc($1)) . " är skitsnack.";
+        $response = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
-        $action = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
+        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
     } elsif ($msg =~
             /(
             (https?:\/\/)?
@@ -44,12 +44,12 @@ sub autobot {
             [-_a-z0-9]+
             [^#\&\?]
             )/ix) {
-        $action = youtube($1);
+        $response = youtube($1);
     } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
-        $action = "john steinbeck";
+        $response = "john steinbeck";
     }
 
-    $server->command("MSG $target $action") if $action;
+    $server->command("MSG $target $response") if $response;
     return;
 }
 
