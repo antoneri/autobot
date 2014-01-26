@@ -99,10 +99,10 @@ sub nisetango {
         \1 # the same as captured above
         |
         [aeiouyåäö] # a vowel
-        )/\1u/ix;
+        )/\1u/gix;
 
-    $input =~ s/(?<!l)l(?!l|\b)/r/i;
-    $input =~ s/(?<!u)e\b/u/i;
+    $input =~ s/(?<!l)l(?!l|\b)/r/gi;
+    $input =~ s/(?<!u)e\b/u/gi;
 
     return uc $input;
 }
