@@ -46,7 +46,7 @@ sub autobot {
             [^#\&\?]
             )/ix) {
         $action = youtube($1);
-    } elsif ($nick == "Trivia" && $msg =~ /author/i) {
+    } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
         $action = "john steinbeck";
     }
 
