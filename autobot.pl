@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 use utf8;
 require LWP::UserAgent;
 use vars qw($VERSION %IRSSI);
