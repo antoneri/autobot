@@ -91,7 +91,7 @@ sub nisetango {
         |
         r+ # word boundary
         |
-        s+(?![chk]|\b) # sc, sh, sk
+        s+(?![chjk]|\b) # sc, sh, sj, sk
         |
         t+(?![ij]|\b) # ti, tj
         )
