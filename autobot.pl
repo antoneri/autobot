@@ -100,7 +100,7 @@ sub nisetango {
         \1 # the same as captured above
         |
         [aeiouyåäö] # a vowel
-        )/\1u/gix;
+        )/$1u/gix;
 
     $input =~ s/(?<!l)l(?!l|\b)/r/gi;
     $input =~ s/(?<!u)e\b/u/gi;
