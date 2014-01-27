@@ -45,8 +45,8 @@ sub autobot {
             (www\.)?
             youtu.?be\.?
             [a-z]{0,3}
-            \/(watch\?v=)?
-            [-_a-z0-9]+
+            \/(watch\?)?
+            [&=-_a-z0-9]+
             [^#\&\?]
             )/ix) {
         $response = youtube($1);
