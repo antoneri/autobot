@@ -126,16 +126,16 @@ sub spotify {
 
     my $url = "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
     my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-    $ua->agent(%IRSSI->{'name'}.".pl/$VERSION ".$ua->agent());
+    $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->agent());
     my $res = $ua->get($url);
 
     if ($res->is_success()) {
         my ($xml, $info) = (XMLin($res->content()), undef);
 
-        if ($xml->{'artist'}->{'name'}) {
-           $info .= $xml->{'artist'}->{'name'};
+        if ($xml{artist}{name}) {
+           $info .= $xml{artist}{name};
         } else {
-            for (keys %{$xml->{'artist'}}) {
+            for (keys %{$xml{artist}}) {
                 $info .= $_.", ";
             }
 
@@ -145,12 +145,12 @@ sub spotify {
 
         $info .= " - ";
 
-        if ($xml->{'name'}) {
-            $info .= $xml->{'name'};
+        if ($xml{name}) {
+            $info .= $xml{name};
         }
 
-        if ($xml->{'album'}->{'name'}) {
-            $info .= " (" . $xml->{'album'}->{'name'} . ")";
+        if ($xml{album}{name}) {
+            $info .= " (" . $xml{album}{name} . ")";
         }
 
         return "[Spotify] $info";
