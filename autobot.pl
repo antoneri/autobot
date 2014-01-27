@@ -23,8 +23,26 @@ sub autobot {
 
     my $response = 0;
 
-    if ($msg =~ /^varför/i) {
-        $response = "$nick: Fråga Håkan.";
+    if ($msg =~
+            /(
+            (https?:\/\/)?
+            (www\.)?
+            youtu.?be\.?
+            [a-z]{0,3}
+            \/(watch\?)?
+            [&=-_a-z0-9]+
+            [^#\&\?]
+            )/ix) {
+        $response = youtube($1);
+    } elsif ($msg =~ /
+            (?!https?:\/\/open.spotify.com\/|spotify:)
+            (album|artist|track)
+            [:\/]
+            ([a-zA-Z0-9]+)\/?
+            /ix) {
+        $response = spotify($1, $2);
+    } elsif ($msg =~ /^!nt (.*)$/) {
+        $response = nisetango($1);
     } elsif ($msg =~
             /(
             astrolog(i|y)|
@@ -39,28 +57,10 @@ sub autobot {
         $response = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
         $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
-    } elsif ($msg =~
-            /(
-            (https?:\/\/)?
-            (www\.)?
-            youtu.?be\.?
-            [a-z]{0,3}
-            \/(watch\?)?
-            [&=-_a-z0-9]+
-            [^#\&\?]
-            )/ix) {
-        $response = youtube($1);
+    } elsif ($msg =~ /^varför/i) {
+        $response = "$nick: Fråga Håkan.";
     } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
         $response = "john steinbeck";
-    } elsif ($msg =~ /^!nt (.*)$/) {
-        $response = nisetango($1);
-    } elsif ($msg =~ /
-            (?!https?:\/\/open.spotify.com\/|spotify:)
-            (album|artist|track)
-            [:\/]
-            ([a-zA-Z0-9]+)\/?
-            /ix) {
-        $response = spotify($1, $2);
     }
 
     $server->command("MSG $target $response") if $response;
