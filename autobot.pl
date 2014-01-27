@@ -1,7 +1,9 @@
 use strict;
 use warnings;
 use utf8;
-require LWP::UserAgent;
+use Irssi;
+use LWP::UserAgent;
+
 use vars qw($VERSION %IRSSI);
 
 $VERSION = "0.1";
