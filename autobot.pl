@@ -143,8 +143,7 @@ sub spotify {
             $info =~ s/, $//;
         }
 
-        # Let's use an n-dash if we're UTF-8 enabled
-        $info .= (Irssi::settings_get_str("term_charset") =~ /utf-8/i) ? " \x{2013} " : " - ";
+        $info .= " - ";
 
         if ($xml->{'name'}) {
             $info .= $xml->{'name'};
