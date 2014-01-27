@@ -53,6 +53,13 @@ sub autobot {
         $response = "john steinbeck";
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
+    } elsif ($msg =~ /
+            (?!https?:\/\/open.spotify.com\/|spotify:)
+            (album|artist|track)
+            [:\/]
+            ([a-zA-Z0-9]+)\/?
+            /ix) {
+        $response = spotify($1, $2);
     }
 
     $server->command("MSG $target $response") if $response;
@@ -110,5 +117,47 @@ sub nisetango {
 
     return uc $input;
 }
+
+# The below code is taken from and copyrighted by
+# Simon Lundstöm (http://soy.se/code/)
+sub spotify {
+    my ($kind, $id) = @_;
+
+    my $url = "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
+    my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
+    $ua->agent(%IRSSI->{'name'}.".pl/$VERSION ".$ua->agent());
+    my $res = $ua->get($url);
+
+    if ($res->is_success()) {
+        my ($xml, $info) = (XMLin($res->content()), undef);
+
+        if ($xml->{'artist'}->{'name'}) {
+           $info .= $xml->{'artist'}->{'name'};
+        } else {
+            for (keys %{$xml->{'artist'}}) {
+                $info .= $_.", ";
+            }
+
+            # Trim off the last ", "
+            $info =~ s/, $//;
+        }
+
+        # Let's use an n-dash if we're UTF-8 enabled
+        $info .= (Irssi::settings_get_str("term_charset") =~ /utf-8/i) ? "\x{2013}" : "-";
+
+        if ($xml->{'name'}) {
+            $info .= $xml->{'name'};
+        }
+
+        if ($xml->{'album'}->{'name'}) {
+            $info .= " (" . $xml->{'album'}->{'name'} . ")";
+        }
+
+        return $info;
+    }
+
+    return 0;
+}
+
 
 Irssi::signal_add('message public', 'autobot');
