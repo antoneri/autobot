@@ -82,7 +82,7 @@ sub nisetango {
         |
         d+(?![j]) # dj
         |
-        g+(?![j]) # gj
+        g+(?![js]) # gj, gs
         |
         l+(?![j]|\b) # lj
         |
@@ -92,9 +92,9 @@ sub nisetango {
         |
         r+ # word boundary
         |
-        s+(?![chjk]|\b) # sc, sh, sj, sk
+        (?<!s)s(?![chjk]) # sc, sh, sj, sk
         |
-        t+(?![ij]|\b) # ti, tj
+        t+(?![hij]|\b) # th, ti, tj
         )
         (?! # not followed by
         \1 # the same as captured above
