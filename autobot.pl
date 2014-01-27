@@ -3,6 +3,7 @@ use warnings;
 use utf8;
 use Irssi;
 use LWP::UserAgent;
+use XML::Simple 'XMLin';
 
 use vars qw($VERSION %IRSSI);
 
