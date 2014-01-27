@@ -80,9 +80,9 @@ sub nisetango {
         |
         c+(?![hk]|\b) # ch, ck
         |
-        d+(?![j]|\b) # dj
+        d+(?![j]) # dj
         |
-        g+(?![j]|\b) # gj
+        g+(?![j]) # gj
         |
         l+(?![j]|\b) # lj
         |
@@ -104,6 +104,7 @@ sub nisetango {
 
     $input =~ s/(?<!l)l(?!l|\b)/r/gi;
     $input =~ s/(?<!u)e\b/u/gi;
+    $input =~ s/ou\b/oo/gi;
 
     return uc $input;
 }
