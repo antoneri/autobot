@@ -22,8 +22,7 @@ sub autobot {
 
     my $response = 0;
 
-    if ($msg =~
-            /(
+    if ($msg =~ /(
             (https?:\/\/)?
             (www\.)?
             youtu.?be\.?
@@ -45,8 +44,7 @@ sub autobot {
         $response = spotify($1, $2);
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
-    } elsif ($msg =~
-            /(
+    } elsif ($msg =~ /(
             astrolog(i|y)|
             creation(ism|\Wscience)|
             crop\W?circles|
