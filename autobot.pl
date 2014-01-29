@@ -31,14 +31,14 @@ sub autobot {
             [&=-_a-z0-9]+
             [^#\&\?]
             )/ix) {
-        $title = get_page_title($1);
+        my $title = get_page_title($1);
         if ($title =~ /(.+)-\syoutube$/i) {
             $response = "[YouTube] $1";
         }
     } elsif ($msg =~ /(
             (?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/tt\d+\/?
             )/ix) {
-        $title = get_page_title($1);
+        my $title = get_page_title($1);
         if ($title =~ /(.+)-\simdb$/i) {
             $response = "[IMDb] $1";
         }
