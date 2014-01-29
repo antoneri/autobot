@@ -55,7 +55,7 @@ sub autobot {
             astrolog(?:i|y)|
             creation(?:ism|\Wscience)|
             crop\W?circles|
-            homoepat(?:i|hy)|
+            hom[oe]+pat(?:i|hy)|
             vortex\W?ma(?:th(?:.*\b)?|tte|tematik)|
             torsion\W?field(?:\Wphysics)?|
             kinesiolog(?:i|y)|
