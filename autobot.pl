@@ -32,8 +32,15 @@ sub autobot {
             [^#\&\?]
             )/ix) {
         $title = get_page_title($1);
-        if ($title =~ /(.+)-.youtube$/i) {
+        if ($title =~ /(.+)-\syoutube$/i) {
             $response = "[YouTube] $1";
+        }
+    } elsif ($msg =~ /(
+            (?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/tt\d+\/?
+            )/ix) {
+        $title = get_page_title($1);
+        if ($title =~ /(.+)-\simdb$/i) {
+            $response = "[IMDb] $1";
         }
     } elsif ($msg =~ /
             (?!https?:\/\/open.spotify.com\/|spotify:)
