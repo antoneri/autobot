@@ -23,11 +23,11 @@ sub autobot {
     my $response = 0;
 
     if ($msg =~ /(
-            (https?:\/\/)?
-            (www\.)?
+            (?:https?:\/\/)?
+            (?:www\.)?
             youtu.?be\.?
             [a-z]{0,3}
-            \/(watch\?)?
+            \/(?:watch\?)?
             [&=-_a-z0-9]+
             [^#\&\?]
             )/ix) {
@@ -45,14 +45,14 @@ sub autobot {
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
     } elsif ($msg =~ /(
-            astrolog(i|y)|
-            creation(ism|\Wscience)|
+            astrolog(?:i|y)|
+            creation(?:ism|\Wscience)|
             crop\W?circles|
-            homoepat(i|hy)|
-            vortex\W?ma(th(.*\b)?|tte|tematik)|
-            torsion\W?field(\Wphysics)?|
-            kinesiolog(i|y)|
-            alternativ(e?)\W?medicin(e?)
+            homoepat(?:i|hy)|
+            vortex\W?ma(?:th(?:.*\b)?|tte|tematik)|
+            torsion\W?field(?:\Wphysics)?|
+            kinesiolog(?:i|y)|
+            alternative?\W?medicine?
             )/ix) {
         $response = ucfirst(lc($1)) . " är skitsnack.";
     } elsif ($msg =~ /^\!dice$/) {
