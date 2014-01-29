@@ -32,7 +32,7 @@ sub autobot {
             [&=-_a-z0-9]+
             [^#\&\?]
             )/ix) {
-        $response = youtube($1);
+        $response = get_page_title($1);
     } elsif ($msg =~ /
             (?!https?:\/\/open.spotify.com\/|spotify:)
             (album|artist|track)
@@ -72,7 +72,7 @@ sub autobot {
     return;
 }
 
-sub youtube {
+sub get_page_title {
     my ($url) = @_;
 
     my $useragent = LWP::UserAgent->new;
