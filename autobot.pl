@@ -32,7 +32,10 @@ sub autobot {
             [&=-_a-z0-9]+
             [^#\&\?]
             )/ix) {
-        $response = get_page_title($1);
+        $title = get_page_title($1);
+        if ($title =~ /(.+)-.youtube$/i) {
+            $response = "[YouTube] $1";
+        }
     } elsif ($msg =~ /
             (?!https?:\/\/open.spotify.com\/|spotify:)
             (album|artist|track)
@@ -80,8 +83,8 @@ sub get_page_title {
     $useragent->env_proxy;
 
     my $response = $useragent->get($url);
-    if ($response->is_success && $response->title() =~ /(.+)-.youtube$/i) {
-        return "[YouTube] $1";
+    if ($response->is_success) {
+        return $response->title();
     }
 
     return 0;
