@@ -40,7 +40,7 @@ sub autobot {
             my $titlepos = undef;
 
             foreach (@words) {
-                if (distance(lc($_), lc($domain)) <= 4) {
+                if (distance(lc($_), lc($domain)) < 3) {
                 $titlepos = $pos;
                 }
                 $pos += 1;
