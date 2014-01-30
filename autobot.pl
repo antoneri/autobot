@@ -41,7 +41,7 @@ sub autobot {
 
             foreach (@words) {
                 if (distance(lc($_), lc($domain)) < 3) {
-                $titlepos = $pos;
+                    $titlepos = $pos;
                 }
                 $pos += 1;
             }
@@ -101,7 +101,7 @@ sub get_page_title {
     $useragent->env_proxy;
 
     my $response = $useragent->get($url);
-    if ($response->is_success) {
+    if ($response->is_success && $response->title()) {
         return $response->title();
     }
 
