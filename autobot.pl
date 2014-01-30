@@ -49,9 +49,9 @@ sub autobot {
             if ($titlepos) {
                 $words[$titlepos] =~ s/^[,\.]|[,\.]$//;
 
-                if ($words[$titlepos-1] =~ "[-\|]") {
+                if ($words[$titlepos-1] && $words[$titlepos-1] =~ "[-\|]") {
                     $title = join(' ', @words[0..$titlepos-2]);
-                } elsif ($words[$titlepos+1] =~ "[-\|]") {
+                } elsif ($words[$titlepos+1] && $words[$titlepos+1] =~ "[-\|]") {
                     $title = join(' ', @words[$titlepos+2..-1]);
                 }
 
