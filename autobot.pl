@@ -39,7 +39,6 @@ sub autobot {
             my $pos = 0;
             my $titlepos = undef;
 
-            print Dumper($domain, @words);
             foreach (@words) {
                 if (distance(lc($_), lc($domain)) < 3) {
                 $titlepos = $pos;
