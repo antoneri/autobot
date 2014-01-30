@@ -64,6 +64,14 @@ sub autobot {
         }
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
+    } elsif ($msg =~ /^\!dice$/) {
+        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
+    } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
+        my @choices = split(';', $1);
+        my $num = scalar @choices;
+        my $choice = int(rand($num));
+        $choices[$choice] =~ s/^\s+|\s+$//g;
+        $response = "Tärningen bestämmer: ".$choices[$choice];
     } elsif ($msg =~ /(
             astrolog(?:i|y)|
             creation(?:ism|\Wscience)|
@@ -75,14 +83,6 @@ sub autobot {
             alternative?\W?medicine?
             )/ix) {
         $response = ucfirst(lc($1)) . " är skitsnack.";
-    } elsif ($msg =~ /^\!dice$/) {
-        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
-    } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
-        my @choices = split(';', $1);
-        my $num = scalar @choices;
-        my $choice = int(rand($num));
-        $choices[$choice] =~ s/^\s+|\s+$//g;
-        $response = "Tärningen bestämmer: ".$choices[$choice];
     } elsif ($msg =~ /^varför/i) {
         $response = "$nick: Fråga Håkan.";
     } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
