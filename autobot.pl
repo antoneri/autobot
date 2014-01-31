@@ -56,11 +56,12 @@ sub autobot {
                 }
 
                 $title = "[".$words[$titlepos]."] ".$title;
-            } else {
-                $title = "[".ucfirst($domain)."] ".$title;
-            }
+                $response = $title;
+            }# else {
+            #    $title = "[".ucfirst($domain)."] ".$title;
+            #}
 
-            $response = $title;
+            #$response = $title;
         }
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
