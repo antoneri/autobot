@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Irssi;
 use LWP::UserAgent;
+use Text::Levenshtein qw(distance);
 use XML::Simple 'XMLin';
 
 use vars qw($VERSION %IRSSI);
@@ -22,35 +23,56 @@ sub autobot {
 
     my $response = 0;
 
-    if ($msg =~ /(
-            (?:https?:\/\/)?
-            (?:www\.)?
-            youtu.?be\.?
-            [a-z]{0,3}
-            \/(?:watch\?)?
-            [&=-_a-z0-9]+
-            [^#\&\?]
-            )/ix) {
-        my $title = get_page_title($1);
-        if ($title =~ /(.+)-\syoutube$/i) {
-            $response = "[YouTube] $1";
-        }
-    } elsif ($msg =~ /(
-            (?:https?:\/\/)?(?:www\.)?imdb\.com\/title\/tt\d+\/?
-            )/ix) {
-        my $title = get_page_title($1);
-        if ($title =~ /(.+)-\simdb$/i) {
-            $response = "[IMDb] $1";
-        }
-    } elsif ($msg =~ /
+    if ($msg =~ /
             (?!https?:\/\/open.spotify.com\/|spotify:)
             (album|artist|track)
             [:\/]
             ([a-zA-Z0-9]+)\/?
             /ix) {
         $response = spotify($1, $2);
+    } elsif ($msg =~ /((?:https?:\/\/)?(?:[\w\d-]+\.)*([\w\d-]+)\.[a-z]{2,6}.*)\b/i) {
+        my $title = get_page_title($1);
+
+        if ($title) {
+            my $domain = $2;
+            my @words = split(' ', $title);
+            my $pos = 0;
+            my $titlepos = undef;
+
+            foreach (@words) {
+                if (distance(lc($_), lc($domain)) < 3) {
+                    $titlepos = $pos;
+                }
+                $pos += 1;
+            }
+
+            if ($titlepos) {
+                $words[$titlepos] =~ s/^[,\.]|[,\.]$//;
+
+                if ($words[$titlepos-1] && $words[$titlepos-1] =~ "[-\|]") {
+                    $title = join(' ', @words[0..$titlepos-2]);
+                } elsif ($words[$titlepos+1] && $words[$titlepos+1] =~ "[-\|]") {
+                    $title = join(' ', @words[$titlepos+2..-1]);
+                }
+
+                $title = "[".$words[$titlepos]."] ".$title;
+                $response = $title;
+            }# else {
+            #    $title = "[".ucfirst($domain)."] ".$title;
+            #}
+
+            #$response = $title;
+        }
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
+    } elsif ($msg =~ /^\!dice$/) {
+        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
+    } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
+        my @choices = split(';', $1);
+        my $num = scalar @choices;
+        my $choice = int(rand($num));
+        $choices[$choice] =~ s/^\s+|\s+$//g;
+        $response = "Tärningen bestämmer: ".$choices[$choice];
     } elsif ($msg =~ /(
             astrolog(?:i|y)|
             creation(?:ism|\Wscience)|
@@ -62,14 +84,6 @@ sub autobot {
             alternative?\W?medicine?
             )/ix) {
         $response = ucfirst(lc($1)) . " är skitsnack.";
-    } elsif ($msg =~ /^\!dice$/) {
-        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
-    } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
-        my @choices = split(';', $1);
-        my $num = scalar @choices;
-        my $choice = int(rand($num));
-        $choices[$choice] =~ s/^\s+|\s+$//g;
-        $response = "Tärningen bestämmer: ".$choices[$choice];
     } elsif ($msg =~ /^varför/i) {
         $response = "$nick: Fråga Håkan.";
     } elsif ($nick eq "Trivia" && $msg =~ /author/i) {
@@ -88,7 +102,7 @@ sub get_page_title {
     $useragent->env_proxy;
 
     my $response = $useragent->get($url);
-    if ($response->is_success) {
+    if ($response->is_success && $response->title()) {
         return $response->title();
     }
 
