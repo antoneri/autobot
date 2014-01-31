@@ -127,7 +127,7 @@ sub nisetango {
 
     $input =~ s/(?<!l)l(?!l|\b)/r/gi;
     $input =~ s/(?<!u)e\b/u/gi;
-    $input =~ s/ou\b/oo/gi;
+    $input =~ s/\byou\b/yoo/gi;
 
     return uc $input;
 }
