@@ -56,7 +56,6 @@ sub autobot {
                 }
 
                 $title = "[".$words[$titlepos]."] ".$title;
-                $response = $title;
             }
 
             $response = $title;
