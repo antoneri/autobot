@@ -62,8 +62,6 @@ sub autobot {
         }
     } elsif ($msg =~ /^!nt (.*)$/) {
         $response = nisetango($1);
-    } elsif ($msg =~ /^\!dice$/) {
-        $response = sprintf "Tärningen visar: %d", int(rand(6)) + 1;
     } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
         my @choices = split(';', $1);
         my $num = scalar @choices;
