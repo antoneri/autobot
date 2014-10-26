@@ -60,8 +60,6 @@ sub autobot {
 
             $response = $title;
         }
-    } elsif ($msg =~ /^!nt (.*)$/) {
-        $response = nisetango($1);
     } elsif ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
         my @choices = split(';', $1);
         my $num = scalar @choices;
