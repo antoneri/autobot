@@ -69,6 +69,14 @@ sub autobot {
     }
 
     $server->command("MSG $target $response") if $response;
+
+    my @opers = ('Ades', 'anton', 'Angan', 'hunky\\', 'Tomas-');
+    my %hashop = map { $_ => 1 } @opers;
+
+    if ($msg eq "op plz" && exists($hashop{$nick})) {
+        $server->command("OP #alvsbyn $nick");
+    }
+
     return;
 }
 
