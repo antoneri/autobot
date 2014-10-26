@@ -87,43 +87,6 @@ sub get_page_title {
     return 0;
 }
 
-sub nisetango {
-    my ($input) = @_;
-
-    $input =~ s/(
-        [bfjkmqvwxz]+(?!\b) # any 'consonants'
-        |
-        c+(?![hk]|\b) # ch, ck
-        |
-        d+(?![j]) # dj
-        |
-        g+(?![js]) # gj, gs
-        |
-        l+(?![j]|\b) # lj
-        |
-        n+(?![gd]|\b) # ng, nd
-        |
-        p+(?![h]) # ph, word boundary
-        |
-        r+ # word boundary
-        |
-        (?<!s)s(?![chjk]) # sc, sh, sj, sk
-        |
-        t+(?![hij]|\b) # th, ti, tj
-        )
-        (?! # not followed by
-        \1 # the same as captured above
-        |
-        [aeiouyåäö] # a vowel
-        )/$1u/gix;
-
-    $input =~ s/(?<!l)l(?!l|\b)/r/gi;
-    $input =~ s/(?<!u)e\b/u/gi;
-    $input =~ s/\byou\b/yoo/gi;
-
-    return uc $input;
-}
-
 # The below code is taken from and copyrighted by
 # Simon Lundstöm (http://soy.se/code/)
 sub spotify {
