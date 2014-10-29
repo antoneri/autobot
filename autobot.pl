@@ -13,6 +13,7 @@ $VERSION = "0.1";
     contact     => "anton\@rizon",
     name        => "autobot",
     date        => "2014-01-23",
+    updated     => "2014-11-29",
     description => "Auto reply IRC-bot/Race of shapeshifting robots.",
     license     => "BSD 2-clause",
     url         => "http://www.github.com/antoneri/autobot/"
