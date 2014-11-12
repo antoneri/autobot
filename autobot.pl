@@ -78,6 +78,10 @@ sub autobot {
         $server->command("OP #alvsbyn $nick");
     }
 
+    if ($msg eq "v plz") {
+        $server->command("VOICE $target $nick");
+    }
+
     return;
 }
 
