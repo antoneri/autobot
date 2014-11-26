@@ -6,12 +6,10 @@
 #   _/_/_/    _/_/_/      _/_/    _/_/    _/_/_/      _/_/        _/_/
 #
 
-package Autobot;
-
 use strict;
 use warnings;
 
-use Irssi;
+use Irssi 'signal_add'
 use LWP::UserAgent;
 use XML::Simple 'XMLin';
 use Text::Levenshtein 'distance';
@@ -39,14 +37,14 @@ sub autobot {
                (album|artist|track)
                [:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
-    $response = spotify($1, $2);
+    $response = Helpers::spotify($1, $2);
   } elsif ($msg =~ /(
                       (?:https?:\/\/)?
                       (?:[\w\d-]+\.)*
                       ([\w\d-]+)
                       \.[a-z]{2,6}.*
                     )\b/ix) {
-    my $title = get_page_title($1);
+    my $title = Helpers::get_page_title($1);
 
     if ($title) {
       my $domain = $2;
@@ -100,6 +98,11 @@ sub autoop {
     $server->command("MSG $target Nope.");
   }
 }
+
+signal_add('message public', 'autoop');
+signal_add('message public', 'autobot');
+
+package Helpers;
 
 sub get_page_title {
   my ($url) = @_;
@@ -155,5 +158,3 @@ sub spotify {
   return 0;
 }
 
-Irssi::signal_add('message public', 'Autobot::autoop');
-Irssi::signal_add('message public', 'Autobot::autobot');
