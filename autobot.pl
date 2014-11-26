@@ -155,5 +155,5 @@ sub spotify {
   return 0;
 }
 
-Irssi::signal_add('message public', 'autoop');
-Irssi::signal_add('message public', 'autobot');
+Irssi::signal_add('message public', 'Autobot::autoop');
+Irssi::signal_add('message public', 'Autobot::autobot');
