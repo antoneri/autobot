@@ -1,10 +1,12 @@
-#
-#                           _/                _/                    _/
-#      _/_/_/  _/    _/  _/_/_/_/    _/_/    _/_/_/      _/_/    _/_/_/_/
-#   _/    _/  _/    _/    _/      _/    _/  _/    _/  _/    _/    _/
-#  _/    _/  _/    _/    _/      _/    _/  _/    _/  _/    _/    _/
-#   _/_/_/    _/_/_/      _/_/    _/_/    _/_/_/      _/_/        _/_/
-#
+
+       ###    ##     ## ########  #######  ########   #######  ########
+      ## ##   ##     ##    ##    ##     ## ##     ## ##     ##    ##
+     ##   ##  ##     ##    ##    ##     ## ##     ## ##     ##    ##
+    ##     ## ##     ##    ##    ##     ## ########  ##     ##    ##
+    ######### ##     ##    ##    ##     ## ##     ## ##     ##    ##
+    ##     ## ##     ##    ##    ##     ## ##     ## ##     ##    ##
+    ##     ##  #######     ##     #######  ########   #######     ##
+
 use strict;
 use warnings;
 
@@ -30,7 +32,7 @@ sub auto_op {
 
   my @opers = qw(Ades anton Angan hunky\\ Tomas);
   my %hashop = map { $_ => 1 } @opers;
-  
+
   if ($msg eq "op plz") {
     if (exists($hashop{$nick})) {
       $srv->command("OP $target $nick");
@@ -44,7 +46,7 @@ sub dice {
   my ($srv, $msg, $nick, $addr, $target) = @_;
 
   if ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
-    
+
     my @choices = split(';', $1);
     my $i = int(rand(scalar @choices));
 
@@ -63,10 +65,10 @@ sub uri_handler{
                (album|artist|track)
                [:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
-                 
+
     my $spotify = spotify($1, $2);
     $srv->command("MSG $target $spotify") if $spotify;
-    
+
   } elsif ($msg =~ /((?:https?:\/\/)?(?:[\w\d-]+\.)*
                     ([\w\d-]+)\.[a-z]{2,6}.*)\b/ix) {
 
@@ -106,10 +108,10 @@ sub get_page_title {
         $title = join(' ', @words[$tpos+2..-1]);
       }
     }
-  
+
     return "[$words[$tpos]] $title";
   }
-  
+
   return 0;
 }
 
@@ -149,10 +151,11 @@ sub spotify {
 
     return "[Spotify] $info";
   }
-  
+
   return 0;
 }
 
 Irssi::signal_add("message public", "auto_op");
 Irssi::signal_add("message public", "dice");
 Irssi::signal_add("message public", "uri_handler");
+
