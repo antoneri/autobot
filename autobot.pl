@@ -5,8 +5,12 @@
 #  _/    _/  _/    _/    _/      _/    _/  _/    _/  _/    _/    _/
 #   _/_/_/    _/_/_/      _/_/    _/_/    _/_/_/      _/_/        _/_/
 #
+
+package Autobot;
+
 use strict;
 use warnings;
+
 use Irssi;
 use LWP::UserAgent;
 use XML::Simple 'XMLin';
@@ -153,3 +157,5 @@ sub spotify {
 
 Irssi::signal_add('message public', 'autoop');
 Irssi::signal_add('message public', 'autobot');
+
+1;
