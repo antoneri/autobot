@@ -157,5 +157,3 @@ sub spotify {
 
 Irssi::signal_add('message public', 'autoop');
 Irssi::signal_add('message public', 'autobot');
-
-1;
