@@ -9,8 +9,8 @@ use strict;
 use warnings;
 use Irssi;
 use LWP::UserAgent;
-use Text::Levenshtein qw(distance);
 use XML::Simple 'XMLin';
+use Text::Levenshtein 'distance';
 
 use vars qw($VERSION %IRSSI);
 
@@ -29,14 +29,19 @@ $VERSION = "0.1";
 sub autobot {
   my ($server, $msg, $nick, $address, $target) = @_;
 
-  my $response = 0;
+  my $response = undef;
 
   if ($msg =~ /(?!https?:\/\/open.spotify.com\/|spotify:)
                (album|artist|track)
                [:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
     $response = spotify($1, $2);
-  } elsif ($msg =~ /((?:https?:\/\/)?(?:[\w\d-]+\.)*([\w\d-]+)\.[a-z]{2,6}.*)\b/i) {
+  } elsif ($msg =~ /(
+                      (?:https?:\/\/)?
+                      (?:[\w\d-]+\.)*
+                      ([\w\d-]+)
+                      \.[a-z]{2,6}.*
+                    )\b/ix) {
     my $title = get_page_title($1);
 
     if ($title) {
@@ -75,31 +80,32 @@ sub autobot {
   }
 
   $server->command("MSG $target $response") if $response;
+}
+
+sub autoop {
+  my ($server, $msg, $nick, $address, $target) = @_;
 
   my @opers = ('Ades', 'anton', 'Angan', 'hunky\\', 'Tomas-');
   my %hashop = map { $_ => 1 } @opers;
 
   if ($msg eq "op plz" && exists($hashop{$nick})) {
-    $server->command("OP #alvsbyn $nick");
-  }
-
-  if ($msg eq "v plz") {
+    $server->command("OP $target $nick");
+  } elsif ($msg eq "v plz") {
     $server->command("VOICE $target $nick");
+  } else {
+    $server->command("MSG $target Nope.");
   }
-
-  return;
 }
 
 sub get_page_title {
   my ($url) = @_;
 
-  my $useragent = LWP::UserAgent->new;
-  $useragent->timeout(3);
-  $useragent->env_proxy;
+  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
+  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->agent());
+  my $res = $ua->get($url);
 
-  my $response = $useragent->get($url);
-  if ($response->is_success && $response->title()) {
-    return $response->title();
+  if ($res->is_success && $res->title()) {
+    return $res->title();
   }
 
   return 0;
@@ -145,5 +151,5 @@ sub spotify {
   return 0;
 }
 
-
+Irssi::signal_add('message public', 'autoop');
 Irssi::signal_add('message public', 'autobot');
