@@ -9,7 +9,7 @@
 use strict;
 use warnings;
 
-use Irssi 'signal_add'
+use Irssi 'signal_add';
 use LWP::UserAgent;
 use XML::Simple 'XMLin';
 use Text::Levenshtein 'distance';
