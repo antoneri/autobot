@@ -69,53 +69,85 @@ sub uri_handler{
     $srv->command("MSG $target $spotify") if $spotify;
 
   } elsif ($msg =~ /((?:https?:\/\/)?
-                    (?:[\w\d-]+\.)*     # subdomain
-                    ([\w\d-]+)          # domain
-                    \.[a-z]{2,6}        # TLD
-                    .*)\b               # "the rest" until word boundary
-                    /ix) {
+                    (?:[\w\d-]+\.)*
+                    ([\w\d-]+)
+                    \.([a-z]{2,20})
+                    (?:\/.*)?)
+                    \b/ix) {
 
-    my $title = get_page_title($1, $2);
+    my $title = get_page_title($1, $2, $3);
     $srv->command("MSG $target $title") if $title;
 
   }
 }
 
 sub get_page_title {
-  my ($url, $domain) = @_;
+  my ($url, $domain, $tld) = @_;
+
+  use constant EDIT_DISTANCE => 2;
 
   my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->agent());
+  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
   my $res = $ua->get($url);
 
-  if ($res->is_success && $res->title) {
+  return 0 unless $res->is_success;
+
+  if ($res->title) {
     my $title = $res->title;
-
     my @words = split(' ', $title);
-    my $tpos = undef;
-    my $pos = 0;
+    my $pos = undef;
 
-    foreach my $word (@words) {
-      if (distance(lc($word), lc($domain)) < 2) {
-        $tpos = $pos;
-      }
-      $pos += 1;
-    }
-
-    if ($tpos) {
-      $words[$tpos] =~ s/^[,\.]|[,\.]$//;
-
-      if ($words[$tpos-1] && $words[$tpos-1] =~ "[-\|]") {
-        $title = join(' ', @words[0..$tpos-2]);
-      } elsif ($words[$tpos+1] && $words[$tpos+1] =~ "[-\|]") {
-        $title = join(' ', @words[$tpos+2..-1]);
+    ## Try to find one-word domain in title.
+    for my $i (0 .. $#words) {
+      if (distance(lc($words[$i]), lc($domain))        < EDIT_DISTANCE ||
+          distance(lc($words[$i]), lc("$domain.$tld")) < EDIT_DISTANCE) {
+        $pos = $i;
+        last;
       }
     }
 
-    return "[$words[$tpos]] $title";
+    ## Try to find two-word domain names in title.
+    unless (defined $pos) {
+      for my $i (0 .. $#words-1) {
+        if (distance(lc(join(' ', @words[$i .. $i+1])), lc($domain))        < EDIT_DISTANCE ||
+            distance(lc(join(' ', @words[$i .. $i+1])), lc("$domain.$tld")) < EDIT_DISTANCE) {
+          splice(@words, $i, 2, join(' ', @words[$i .. $i+1]));
+          $pos = $i;
+          last;
+        }
+      }
+    }
+
+    ## We found the domain in the title, remove it.
+    if (defined $pos) {
+      $words[$pos] =~ s/^[,\.]|[,\.:]$//; # FIXME: is this needed?
+
+      ## Look for delimiters before and after the domain name in the title.
+      if ($words[$pos-1] && $words[$pos-1] =~ "[-\|]") {
+        $title = join(' ', @words[0 .. $pos-2]);
+      } elsif ($words[$pos+1] && $words[$pos+1] =~ "[-\|]") {
+        $title = join(' ', @words[$pos+2 .. $#words]);
+      }
+      ## Domain name not separated from title by common delimiters.
+      ## Here we choose to build our title on every word but the domain.
+      ## This will fail.
+        elsif ($pos == 0) {
+        $title = join(' ', @words[$pos+1 .. $#words]);
+      } elsif ($pos == $#words) {
+        $title  = join(' ', @words[0 .. $pos-1]);
+      }
+    }
+
+    return defined $pos
+           ? "[$words[$pos]] $title"
+           : "[".ucfirst($domain)."] $title";
+
+  ## Can we at least show some content type information?
+  } elsif ($res->content_type && $res->filename) {
+    return "[".ucfirst($domain)."] (".$res->content_type.") ".$res->filename."\n";
   }
 
-  return 0;
+  return 0; # Fall-through
 }
 
 ### The below code is based on code copyrighted by
@@ -125,7 +157,7 @@ sub spotify {
 
   my $url = "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
   my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->agent());
+  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
   my $res = $ua->get($url);
 
   if ($res->is_success) {
