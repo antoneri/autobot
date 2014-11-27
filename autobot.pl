@@ -61,16 +61,19 @@ sub dice {
 sub uri_handler{
   my ($srv, $msg, $nick, $addr, $target) = @_;
 
-  if ($msg =~ /(?!https?:\/\/open.spotify.com\/|spotify:)
-               (album|artist|track)
-               [:\/]
+  if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
+               (album|artist|track)[:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
 
     my $spotify = spotify($1, $2);
     $srv->command("MSG $target $spotify") if $spotify;
 
-  } elsif ($msg =~ /((?:https?:\/\/)?(?:[\w\d-]+\.)*
-                    ([\w\d-]+)\.[a-z]{2,6}.*)\b/ix) {
+  } elsif ($msg =~ /((?:https?:\/\/)?
+                    (?:[\w\d-]+\.)*     # subdomain
+                    ([\w\d-]+)          # domain
+                    \.[a-z]{2,6}        # TLD
+                    .*)\b               # "the rest" until word boundary
+                    /ix) {
 
     my $title = get_page_title($1, $2);
     $srv->command("MSG $target $title") if $title;
