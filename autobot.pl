@@ -134,7 +134,7 @@ sub get_recent_commits {
 
   my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
   $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
-  my $url = "https://api.github.com/repos/$args{user}/$args{repo}/commits?since=$dt";
+  my $url = "https://api.github.com/repos/$args{user}/$args{repo}/commits?since=".$dt."Z";
   my $res = $ua->get($url);
 
   if ($res->is_success) {
