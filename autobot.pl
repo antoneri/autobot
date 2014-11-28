@@ -32,7 +32,7 @@ $VERSION = "0.2";
           license     => "BSD 2-clause",
           url         => "http://www.github.com/antoneri/autobot/");
 
-use constant API_TIMEOUT => 2*60*1000;  #miliseconds
+use constant API_TIMEOUT => 2;  #minutes
 use constant GITHUB_USER => 'antoneri';
 use constant GITHUB_REPO => 'autobot';
 
@@ -154,7 +154,7 @@ sub show_commits {
   }
 }
 
-Irssi::timeout_add(API_TIMEOUT, show_commits, undef);
+Irssi::timeout_add(API_TIMEOUT*60*1000, show_commits, undef);
 Irssi::signal_add("message public", "auto_op");
 Irssi::signal_add("message public", "dice");
 Irssi::signal_add("message public", "uri_handler");
