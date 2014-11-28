@@ -32,9 +32,9 @@ $VERSION = "0.2";
           license     => "BSD 2-clause",
           url         => "http://www.github.com/antoneri/autobot/");
 
-use constant API_TIMEOUT = 2*60*1000;  #miliseconds
-use constant GITHUB_USER = 'antoneri';
-use constant GITHUB_REPO = 'autobot';
+use constant API_TIMEOUT => 2*60*1000;  #miliseconds
+use constant GITHUB_USER => 'antoneri';
+use constant GITHUB_REPO => 'autobot';
 
 sub auto_op {
   my ($srv, $msg, $nick, $addr, $target) = @_;
