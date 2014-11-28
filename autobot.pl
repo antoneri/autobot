@@ -154,7 +154,7 @@ sub show_commits {
   }
 }
 
-Irssi::timeout_add(API_TIMEOUT, show_commit);
+Irssi::timeout_add(API_TIMEOUT, show_commits, undef);
 Irssi::signal_add("message public", "auto_op");
 Irssi::signal_add("message public", "dice");
 Irssi::signal_add("message public", "uri_handler");
