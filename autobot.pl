@@ -134,7 +134,7 @@ sub get_recent_commits {
 
   my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
   $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
-  my $url = "https://api.github.com/repos/$args{user}/$args{repo}/commits?since=".$dt."Z";
+  my $url = "https://api.github.com/repos/$args{user}/$args{repo}/commits?since=${dt}Z";
   my $res = $ua->get($url);
 
   if ($res->is_success) {
@@ -154,7 +154,7 @@ sub show_commits {
   }
 }
 
-Irssi::timeout_add(API_TIMEOUT*60*1000, show_commits, undef);
+Irssi::timeout_add(API_TIMEOUT*60*1000, "show_commits", undef);
 Irssi::signal_add("message public", "auto_op");
 Irssi::signal_add("message public", "dice");
 Irssi::signal_add("message public", "uri_handler");
