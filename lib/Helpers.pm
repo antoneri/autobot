@@ -1,6 +1,6 @@
 package Helpers;
-our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(command message get_url);
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(command message get_url);
 
 use strict;
 use warnings;
