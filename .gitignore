@@ -14,5 +14,3 @@ META.yml
 MYMETA.yml
 nytprof.out
 pm_to_blib
-TitleMangler/*
-debug_url.pl

@@ -11,47 +11,69 @@ use strict;
 use warnings;
 
 use Irssi;
-use LWP::UserAgent;
-use XML::Simple 'XMLin';
-use Text::Levenshtein 'distance';
-use JSON qw(decode_json);
 use DateTime;
+use LWP::UserAgent;
+use JSON qw(decode_json);
+use XML::Simple qw(XMLin);
 
-use lib "/home/tfy12/tfy12aen/.autobot/scripts/autobot/TitleMangler/lib";
+use File::Basename;
+use lib dirname (__FILE__) . "/lib";
 use TitleMangler;
+#use Helpers qw(command message);
 
-use vars qw($VERSION %IRSSI);
+our $VERSION = "0.2";
+our %IRSSI   = (authors     => "Anton Eriksson",
+                contact     => "anton\@rizon",
+                name        => "autobot",
+                date        => "2014-01-23",
+                updated     => "2014-11-29",
+                description => "IRC-bot",
+                license     => "BSD 2-clause",
+                url         => "http://www.github.com/antoneri/autobot/");
 
-$VERSION = "0.2";
-%IRSSI = (authors     => "Anton Eriksson",
-          contact     => "anton\@rizon",
-          name        => "autobot",
-          date        => "2014-01-23",
-          updated     => "2014-11-27",
-          description => "Auto reply IRC-bot/Race of shapeshifting robots.",
-          license     => "BSD 2-clause",
-          url         => "http://www.github.com/antoneri/autobot/");
+use constant {
+  API_TIMEOUT => 2,  #minutes
+  GITHUB_USER => 'antoneri',
+  GITHUB_REPO => 'autobot',
 
-use constant API_TIMEOUT => 2;  #minutes
-use constant GITHUB_USER => 'antoneri';
-use constant GITHUB_REPO => 'autobot';
+  CHANNEL     => "#alvsbyn",
+  OPERS       => qw(Ades anton Angan hunky\\ Tomas),
 
-sub auto_op {
-  my ($srv, $msg, $nick, $addr, $target) = @_;
+  MISSION     => "Kill all humans.",
+}
 
-  my @opers = qw(Ades anton Angan hunky\\ Tomas);
-  my %hashop = map { $_ => 1 } @opers;
+our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
+$ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
+
+sub command {
+  my ($type, $message) = @_;
+  my $server = Irssi::active_server();
+  $server->command("$type @{[CHANNEL]} $message");
+}
+
+sub message {
+  my $message = shift;
+  command("MSG", $message;
+}
+
+sub sig_auto_op {
+  my (undef, $msg, $nick, undef, undef) = @_;
+
+  my %hashop = map { $_ => 1 } OPERS;
 
   if ($msg eq "op plz") {
+
     if (exists($hashop{$nick})) {
-      $srv->command("OP $target $nick");
+      command("OP", $nick);
     } else {
-      $srv->command("MSG $target Nope.");
+      message("Nope.");
     }
+
   }
 }
 
-sub dice {
+sub sig_dice {
+  my (undef, $msg, $nick, undef, undef) = @_;
   my ($srv, $msg, $nick, $addr, $target) = @_;
 
   if ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
@@ -61,13 +83,13 @@ sub dice {
 
     $choices[$i] =~ s/^\s+|\s+$//g;  # trim whitespace
 
-    $srv->command("MSG $target Tärningen bestämmer: $choices[$i]")
+    message("Tärningen bestämmer: $choices[$i]");
   }
 }
 
 ### We don't want 'spotify' and 'TitleMangler' to
 ### both react to spotify http uri:s
-sub uri_handler{
+sub sig_uri_handler{
   my ($srv, $msg, $nick, $addr, $target) = @_;
 
   if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
@@ -75,12 +97,12 @@ sub uri_handler{
                ([a-zA-Z0-9]+)\/?/ix) {
 
     my $spotify = spotify($1, $2);
-    $srv->command("MSG $target $spotify") if $spotify;
+    message($spotify) if $spotify;
 
   } else {
 
     my $title = TitleMangler::get($msg);
-    $srv->command("MSG $target $title") if $title;
+    message($title) if $title;
 
   }
 }
@@ -92,8 +114,6 @@ sub spotify {
   my ($kind, $id) = @_;
 
   my $url = "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
-  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
   my $res = $ua->get($url);
 
   if ($res->is_success) {
@@ -126,36 +146,24 @@ sub spotify {
   return 0;
 }
 
-sub get_recent_commits {
-  my %args = @_;
-
+sub show_commits {
   my $dt = DateTime->now->set_time_zone("GMT");
-  $dt->subtract(minutes => $args{minutes});
+  $dt->subtract(minutes => API_TIMEOUT);
 
-  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
-  my $url = "https://api.github.com/repos/$args{user}/$args{repo}/commits?since=${dt}Z";
+  my $url = "https://api.github.com/repos/${[GITHUB_USER]}/${[GITHUB_REPO]}/commits?since=${dt}Z";
   my $res = $ua->get($url);
 
   if ($res->is_success) {
-    my $json = decode_json($res->decoded_content);
-    return @{$json} if $json;
-  }
+    my $commits = decode_json($res->decoded_content);
 
-  return [];
-}
-
-sub show_commits {
-  my @commits = get_recent_commits(user => GITHUB_USER, repo => GITHUB_REPO, minutes => API_TIMEOUT);
-  my $srv = Irssi::active_server();
-
-  foreach my $c (@commits) {
-    $srv->command("MSG #alvsbyn [autobot] Commit: $c->{commit}->{message}");
+    foreach my $c (@{$commits}) {
+      message("[autobot] Commit: $c->{commit}->{message}");
+    }
   }
 }
 
 Irssi::timeout_add(API_TIMEOUT*60*1000, "show_commits", undef);
-Irssi::signal_add("message public", "auto_op");
-Irssi::signal_add("message public", "dice");
-Irssi::signal_add("message public", "uri_handler");
+Irssi::signal_add("message public", "sig_auto_op");
+Irssi::signal_add("message public", "sig_dice");
+Irssi::signal_add("message public", "sig_uri_handler");
 
