@@ -7,7 +7,6 @@ use JSON;
 
 use File::Basename;
 use lib dirname (__FILE__) . "/lib";
-use Helpers qw(command message get_url);
 use Spotify;
 use TitleMangler;
 
@@ -21,9 +20,29 @@ our %IRSSI   = (authors     => "Anton Eriksson",
                 license     => "BSD 2-clause",
                 url         => "http://www.github.com/antoneri/autobot/");
 
-our $API_TIMEOUT = 2;  #minutes
+our $API_TIMEOUT = 2;  #minutes
+our $USER_AGENT  = "$IRSSI{name}.pl/$VERSION";
 
-Helpers::set_user_agent("$IRSSI{name}.pl/$VERSION");
+sub command {
+  my ($type, $target, $message) = @_;
+  my $server = Irssi::active_server();
+  $server->command("$type $target $message");
+}
+
+sub message {
+  my ($target, $message) = @_;
+  command("MSG", $target, $message);
+}
+
+sub get_url {
+  my ($url) = @_;
+
+  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
+  $ua->agent($USER_AGENT);
+  my $res = $ua->get($url);
+
+  return $res;
+}
 
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, $target) = @_;
