@@ -40,7 +40,7 @@ use constant {
   OPERS       => qw(Ades anton Angan hunky\\ Tomas),
 
   MISSION     => "Kill all humans.",
-}
+};
 
 our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
 $ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
