@@ -22,16 +22,15 @@ our %IRSSI   = (authors     => "Anton Eriksson",
                 license     => "BSD 2-clause",
                 url         => "http://www.github.com/antoneri/autobot/");
 
-our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-
 use constant {
   API_TIMEOUT => 2,  #minutes
   GITHUB_USER => 'antoneri',
   GITHUB_REPO => 'autobot',
 
-  USER_AGENT  => "autobot.pl/0.2 $ua->_agent",
+  USER_AGENT  => "autobot.pl/0.2",
 };
 
+our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
 $ua->agent(USER_AGENT);
 
 sub sig_auto_op {
