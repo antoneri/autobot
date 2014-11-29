@@ -37,8 +37,6 @@ use constant {
   GITHUB_REPO => 'autobot',
 
   CHANNEL     => "#alvsbyn",
-  OPERS       => qw(Ades anton Angan hunky\\ Tomas),
-
   MISSION     => "Kill all humans.",
 };
 
@@ -59,7 +57,8 @@ sub message {
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, undef) = @_;
 
-  my %hashop = map { $_ => 1 } OPERS;
+  my @opers = qw(Ades anton Angan hunky\\ Tomas);
+  my %hashop = map { $_ => 1 } @opers;
 
   if ($msg eq "op plz") {
 
