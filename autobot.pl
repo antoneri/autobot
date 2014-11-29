@@ -51,7 +51,7 @@ sub command {
 
 sub message {
   my $message = shift;
-  command("MSG", $message;
+  command("MSG", $message);
 }
 
 sub sig_auto_op {
