@@ -1,12 +1,3 @@
-
-       ###    ##     ## ########  #######  ########   #######  ########
-      ## ##   ##     ##    ##    ##     ## ##     ## ##     ##    ##
-     ##   ##  ##     ##    ##    ##     ## ##     ## ##     ##    ##
-    ##     ## ##     ##    ##    ##     ## ########  ##     ##    ##
-    ######### ##     ##    ##    ##     ## ##     ## ##     ##    ##
-    ##     ## ##     ##    ##    ##     ## ##     ## ##     ##    ##
-    ##     ##  #######     ##     #######  ########   #######     ##
-
 use strict;
 use warnings;
 
@@ -14,12 +5,12 @@ use Irssi;
 use DateTime;
 use LWP::UserAgent;
 use JSON qw(decode_json);
-use XML::Simple qw(XMLin);
 
 use File::Basename;
 use lib dirname (__FILE__) . "/lib";
+use Spotify;
+use Helpers qw(command message);
 use TitleMangler;
-#use Helpers qw(command message);
 
 our $VERSION = "0.2";
 our %IRSSI   = (authors     => "Anton Eriksson",
@@ -31,31 +22,20 @@ our %IRSSI   = (authors     => "Anton Eriksson",
                 license     => "BSD 2-clause",
                 url         => "http://www.github.com/antoneri/autobot/");
 
+our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
+
 use constant {
   API_TIMEOUT => 2,  #minutes
   GITHUB_USER => 'antoneri',
   GITHUB_REPO => 'autobot',
 
-  CHANNEL     => "#alvsbyn",
-  MISSION     => "Kill all humans.",
+  USER_AGENT  => "autobot.pl/0.2 $ua->_agent",
 };
 
-our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-$ua->agent($IRSSI{name}.".pl/$VERSION ".$ua->_agent);
-
-sub command {
-  my ($type, $message) = @_;
-  my $server = Irssi::active_server();
-  $server->command("$type @{[CHANNEL]} $message");
-}
-
-sub message {
-  my $message = shift;
-  command("MSG", $message);
-}
+$ua->agent(USER_AGENT);
 
 sub sig_auto_op {
-  my (undef, $msg, $nick, undef, undef) = @_;
+  my (undef, $msg, $nick, undef, $target) = @_;
 
   my @opers = qw(Ades anton Angan hunky\\ Tomas);
   my %hashop = map { $_ => 1 } @opers;
@@ -63,16 +43,16 @@ sub sig_auto_op {
   if ($msg eq "op plz") {
 
     if (exists($hashop{$nick})) {
-      command("OP", $nick);
+      command("OP", $target, $nick);
     } else {
-      message("Nope.");
+      message($target, "Nope.");
     }
 
   }
 }
 
 sub sig_dice {
-  my (undef, $msg, $nick, undef, undef) = @_;
+  my (undef, $msg, $nick, undef, $target) = @_;
 
   if ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
 
@@ -81,67 +61,29 @@ sub sig_dice {
 
     $choices[$i] =~ s/^\s+|\s+$//g;  # trim whitespace
 
-    message("Tärningen bestämmer: $choices[$i]");
+    message($target, "Tärningen bestämmer: $choices[$i]");
   }
 }
 
-### We don't want 'spotify' and 'TitleMangler' to
+### We don't want 'Spotify' and 'TitleMangler' to
 ### both react to spotify http uri:s
 sub sig_uri_handler{
-  my (undef, $msg, $nick, undef, undef) = @_;
+  my (undef, $msg, $nick, undef, $target) = @_;
 
   if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
                (album|artist|track)[:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
 
-    my $spotify = spotify($1, $2);
-    message($spotify) if $spotify;
+    Spotify::set_user_agent(USER_AGENT);
+    my $spotify = Spotify::spotify($1, $2);
+    message($target, $spotify) if $spotify;
 
   } else {
 
     my $title = TitleMangler::get($msg);
-    message($title) if $title;
+    message($target, $title) if $title;
 
   }
-}
-
-
-### The below code is based on code copyrighted by
-### Simon Lundstöm (http://soy.se/code/)
-sub spotify {
-  my ($kind, $id) = @_;
-
-  my $url = "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
-  my $res = $ua->get($url);
-
-  if ($res->is_success) {
-    my ($xml, $info) = (XMLin($res->content), undef);
-
-    if ($xml->{'artist'}->{'name'}) {
-      $info .= $xml->{'artist'}->{'name'};
-    } else {
-      for (keys %{$xml->{'artist'}}) {
-        $info .= $_.", ";
-      }
-
-      # Trim off the last ", "
-      $info =~ s/, $//;
-    }
-
-    $info .= " - ";
-
-    if ($xml->{'name'}) {
-      $info .= $xml->{'name'};
-    }
-
-    if ($xml->{'album'}->{'name'}) {
-      $info .= " (" . $xml->{'album'}->{'name'} . ")";
-    }
-
-    return "[Spotify] $info";
-  }
-
-  return 0;
 }
 
 sub show_commits {
@@ -155,7 +97,7 @@ sub show_commits {
     my $commits = decode_json($res->decoded_content);
 
     foreach my $c (@{$commits}) {
-      message("[autobot] Commit: $c->{commit}->{message}");
+      message($target, "[autobot] Commit: $c->{commit}->{message}");
     }
   }
 }

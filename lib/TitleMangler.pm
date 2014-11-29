@@ -1,17 +1,13 @@
 package TitleMangler;
+our @ISA       = qw(Exporter);
+our @EXPORT    = qw(get);
+our @EXPORT_OK = qw(page_title);
 
-use 5.014;
 use strict;
 use warnings;
 
 use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
-
-require Exporter;
-
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(get);
-our $VERSION = '0.01';
 
 use constant DEBUG => 0;
 
@@ -118,32 +114,3 @@ sub page_title {
 }
 
 1;
-
-__END__
-=head1 NAME
-
-TitleMangler - Perl extension for blah blah blah
-
-=head1 SYNOPSIS
-
-  use TitleMangler;
-
-=head1 DESCRIPTION
-
-Get formatted page title or at least content type from URL.
-
-  $formatted = TitleMangler->get("http://example.com/")
-
-=head1 AUTHOR
-
-Anton Eriksson, E<lt>anton@apple.comE<gt>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2014 by Anton Eriksson
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.18.2 or,
-at your option, any later version of Perl 5 you may have available.
-
-=cut
