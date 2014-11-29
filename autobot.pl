@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 
-use Irssi;
 use DateTime;
-use JSON qw(decode_json);
+use Irssi;
+use JSON;
 
 use File::Basename;
 use lib dirname (__FILE__) . "/lib";

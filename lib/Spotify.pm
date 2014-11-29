@@ -1,4 +1,6 @@
 package Spotify;
+
+require Exporter;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(lookup parse);
 

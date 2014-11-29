@@ -1,6 +1,8 @@
 package Helpers;
-our @ISA    = qw(Exporter);
-our @EXPORT = qw(command message get_url);
+
+require Exporter;
+our @ISA       = qw(Exporter);
+our @EXPORT_OK = qw(command message set_user_agent get_url);
 
 use strict;
 use warnings;
