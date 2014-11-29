@@ -97,7 +97,7 @@ sub show_commits {
     my $commits = decode_json($res->decoded_content);
 
     foreach my $c (@{$commits}) {
-      message($target, "[autobot] Commit: $c->{commit}->{message}");
+      message("#testautobot", "[autobot] Commit: $c->{commit}->{message}");
     }
   }
 }
