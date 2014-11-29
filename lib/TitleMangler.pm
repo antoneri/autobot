@@ -1,39 +1,17 @@
 package TitleMangler;
 our @ISA       = qw(Exporter);
-our @EXPORT    = qw(get);
-our @EXPORT_OK = qw(page_title);
+our @EXPORT_OK = qw(formatted);
 
 use strict;
 use warnings;
 
-use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
 
 use constant DEBUG => 0;
+use constant EDIT_DISTANCE => 2;
 
-sub get {
-  my ($url) = @_;
-
-  if ($url =~ /((?:https?:\/\/)?
-                (?:[\w\d-]+\.)*
-                ([\w\d-]+)
-                \.([a-z]{2,20})
-                (?:\/.*)?)
-                \b/ix) {
-
-    my $title = page_title($1, $2, $3);
-    return $title if $title;
-  }
-}
-
-sub page_title {
-  my ($url, $domain, $tld) = @_;
-
-  use constant EDIT_DISTANCE => 2;
-
-  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent("TitleMangler/$VERSION ".$ua->_agent);
-  my $res = $ua->get($url);
+sub formatted {
+  my ($res, $url, $domain, $tld) = @_;
 
   return 0 unless $res->is_success;
 

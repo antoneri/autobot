@@ -3,13 +3,12 @@ use warnings;
 
 use Irssi;
 use DateTime;
-use LWP::UserAgent;
 use JSON qw(decode_json);
 
 use File::Basename;
 use lib dirname (__FILE__) . "/lib";
+use Helpers qw(command message get_url);
 use Spotify;
-use Helpers qw(command message);
 use TitleMangler;
 
 our $VERSION = "0.2";
@@ -22,16 +21,9 @@ our %IRSSI   = (authors     => "Anton Eriksson",
                 license     => "BSD 2-clause",
                 url         => "http://www.github.com/antoneri/autobot/");
 
-use constant {
-  API_TIMEOUT => 2,  #minutes
-  GITHUB_USER => 'antoneri',
-  GITHUB_REPO => 'autobot',
+our $API_TIMEOUT = 2;  #minutes
 
-  USER_AGENT  => "autobot.pl/0.2",
-};
-
-our $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-$ua->agent(USER_AGENT);
+Helpers::set_user_agent("$IRSSI{name}.pl/$VERSION");
 
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, $target) = @_;
@@ -51,7 +43,7 @@ sub sig_auto_op {
 }
 
 sub sig_dice {
-  my (undef, $msg, $nick, undef, $target) = @_;
+  my (undef, $msg, undef, undef, $target) = @_;
 
   if ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
 
@@ -67,19 +59,25 @@ sub sig_dice {
 ### We don't want 'Spotify' and 'TitleMangler' to
 ### both react to spotify http uri:s
 sub sig_uri_handler{
-  my (undef, $msg, $nick, undef, $target) = @_;
+  my (undef, $msg, undef, undef, $target) = @_;
 
   if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
                (album|artist|track)[:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
 
-    Spotify::set_user_agent(USER_AGENT);
-    my $spotify = Spotify::spotify($1, $2);
+    my $res = get_url(Spotify::lookup($1, $2));
+    my $spotify = Spotify::parse($res);
     message($target, $spotify) if $spotify;
 
-  } else {
+  } elsif ($msg =~ /((?:https?:\/\/)?
+                     (?:[\w\d-]+\.)*
+                     ([\w\d-]+)
+                     \.([a-z]{2,20})
+                     (?:\/.*)?)
+                     \b/ix) {
 
-    my $title = TitleMangler::get($msg);
+    my $res = get_url($1);
+    my $title = TitleMangler::formatted($res, $1, $2, $3);
     message($target, $title) if $title;
 
   }
@@ -87,10 +85,9 @@ sub sig_uri_handler{
 
 sub show_commits {
   my $dt = DateTime->now->set_time_zone("GMT");
-  $dt->subtract(minutes => API_TIMEOUT);
+  $dt->subtract(minutes => $API_TIMEOUT);
 
-  my $url = "https://api.github.com/repos/${[GITHUB_USER]}/${[GITHUB_REPO]}/commits?since=${dt}Z";
-  my $res = $ua->get($url);
+  my $res = get_url("https://api.github.com/repos/antoneri/autobot/commits?since=${dt}Z");
 
   if ($res->is_success) {
     my $commits = decode_json($res->decoded_content);
@@ -101,7 +98,7 @@ sub show_commits {
   }
 }
 
-Irssi::timeout_add(API_TIMEOUT*60*1000, "show_commits", undef);
+Irssi::timeout_add($API_TIMEOUT*60*1000, "show_commits", undef);
 Irssi::signal_add("message public", "sig_auto_op");
 Irssi::signal_add("message public", "sig_dice");
 Irssi::signal_add("message public", "sig_uri_handler");
