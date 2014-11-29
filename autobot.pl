@@ -73,7 +73,6 @@ sub sig_auto_op {
 
 sub sig_dice {
   my (undef, $msg, $nick, undef, undef) = @_;
-  my ($srv, $msg, $nick, $addr, $target) = @_;
 
   if ($msg =~ /^!dice ([^;]+(?:;[^;]+)+)$/i) {
 
@@ -89,7 +88,7 @@ sub sig_dice {
 ### We don't want 'spotify' and 'TitleMangler' to
 ### both react to spotify http uri:s
 sub sig_uri_handler{
-  my ($srv, $msg, $nick, $addr, $target) = @_;
+  my (undef, $msg, $nick, undef, undef) = @_;
 
   if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
                (album|artist|track)[:\/]
