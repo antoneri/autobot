@@ -5,23 +5,23 @@ use DateTime;
 use Irssi;
 use JSON;
 
-use File::Basename;
-use lib dirname (__FILE__) . "/lib";
+use FindBin;
+use lib "$FindBin::Bin/lib";
 use Spotify;
 use TitleMangler;
 
 our $VERSION = "0.2";
-our %IRSSI   = (authors     => "Anton Eriksson",
-                contact     => "anton\@rizon",
-                name        => "autobot",
-                date        => "2014-01-23",
-                updated     => "2014-11-29",
-                description => "IRC-bot",
-                license     => "BSD 2-clause",
-                url         => "http://www.github.com/antoneri/autobot/");
+our %IRSSI = (authors     => "Anton Eriksson",
+              contact     => "anton\@rizon",
+              name        => "autobot",
+              date        => "2014-01-23",
+              updated     => "2014-11-29",
+              description => "IRC-bot",
+              license     => "BSD 2-clause",
+              url         => "http://www.github.com/antoneri/autobot/");
 
 our $API_TIMEOUT = 2;  #minutes
-our $USER_AGENT  = "$IRSSI{name}.pl/$VERSION";
+our $USER_AGENT = "$IRSSI{name}.pl/$VERSION";
 
 sub command {
   my ($type, $target, $message) = @_;

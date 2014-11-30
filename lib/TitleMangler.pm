@@ -1,11 +1,11 @@
 package TitleMangler;
 
-require Exporter;
-our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(formatted);
-
 use strict;
 use warnings;
+
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(formatted);
 
 use Text::Levenshtein qw(distance);
 
