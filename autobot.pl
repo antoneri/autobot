@@ -21,6 +21,13 @@ our %IRSSI = (authors     => "Anton Eriksson",
 
 our $API_TIMEOUT = 2;  #minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION";
+our $DEBUG = 0;
+
+if ($DEBUG) {
+  our $CHANNEL = "#testautobot";
+} else {
+  our $CHANNEL = "#alvsbyn";
+}
 
 sub command {
   my ($type, $target, $message) = @_;
@@ -111,7 +118,7 @@ sub show_commits {
     my $commits = decode_json($res->decoded_content);
 
     foreach my $c (@{$commits}) {
-      message("#testautobot", "[autobot] Commit: $c->{commit}->{message}");
+      message($CHANNEL, "[autobot] Commit: $c->{commit}->{message}");
     }
   }
 }
