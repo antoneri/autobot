@@ -2,6 +2,7 @@ package Spotify;
 
 use strict;
 use warnings;
+use 5.014;
 
 require Exporter;
 our @ISA = qw(Exporter);
