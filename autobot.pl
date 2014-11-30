@@ -2,15 +2,11 @@ use strict;
 use warnings;
 use 5.014;
 
-use FindBin;
-use lib "$FindBin::Bin/lib";
-
 use DateTime;
 use Irssi;
 use JSON;
-
-use Spotify;
-use TitleMangler;
+use Text::Levenshtein qw(distance);
+use XML::Simple qw(XMLin);
 
 our $VERSION = "0.2";
 our %IRSSI = (authors     => "Anton Eriksson",
@@ -77,7 +73,7 @@ sub sig_dice {
   }
 }
 
-### We don't want 'Spotify' and 'TitleMangler' to
+### We don't want 'spotify_*' and 'formatted_title' to
 ### both react to spotify http uri:s
 sub sig_uri_handler{
   my (undef, $msg, undef, undef, $target) = @_;
@@ -86,8 +82,8 @@ sub sig_uri_handler{
                (album|artist|track)[:\/]
                ([a-zA-Z0-9]+)\/?/ix) {
 
-    my $res = get_url(Spotify::lookup($1, $2));
-    my $spotify = Spotify::parse($res);
+    my $res = get_url(spotify_api_url($1, $2));
+    my $spotify = spotify_parse_res($res);
     message($target, $spotify) if $spotify;
 
   } elsif ($msg =~ /((?:https?:\/\/)?
@@ -98,7 +94,7 @@ sub sig_uri_handler{
                      \b/ix) {
 
     my $res = get_url($1);
-    my $title = TitleMangler::formatted($res, $1, $2, $3);
+    my $title = formatted_title($res, $1, $2, $3);
     message($target, $title) if $title;
 
   }
@@ -117,6 +113,121 @@ sub show_commits {
       message("#testautobot", "[autobot] Commit: $c->{commit}->{message}");
     }
   }
+}
+
+sub formatted_title {
+  my ($res, $url, $domain, $tld) = @_;
+
+  return 0 unless $res->is_success;
+
+  my $edit_distance = 2;
+
+  if ($res->title) {
+    my $title = $res->title;
+    my @words = split(' ', $title);
+    my $pos = undef;
+
+    ## Try to find one-word domain.tld in title.
+    for my $i (0 .. $#words) {
+        if (distance(lc($words[$i]), lc("$domain.$tld")) < $edit_distance) {
+        $pos = $i;
+        last;
+      }
+    }
+
+    ## Try to find one-word domain in title.
+    unless (defined $pos) {
+      for my $i (0 .. $#words) {
+        if (distance(lc($words[$i]), lc($domain)) < $edit_distance) {
+          $pos = $i;
+          last;
+        }
+      }
+    }
+
+    ## Try to find two-word domain names in title.
+    unless (defined $pos) {
+      for my $i (0 .. $#words-1) {
+        if (distance(lc(join(' ', @words[$i .. $i+1])), lc($domain))        < $edit_distance ||
+            distance(lc(join(' ', @words[$i .. $i+1])), lc("$domain.$tld")) < $edit_distance) {
+          splice(@words, $i, 2, join(' ', @words[$i .. $i+1]));
+          $pos = $i;
+          last;
+        }
+      }
+    }
+
+    ## We found the domain in the title, remove it.
+    if (defined $pos) {
+      $words[$pos] =~ s/^[,\.]|[,\.:]$//; # FIXME: is this needed?
+
+      ## Look for delimiters before and after the domain name in the title.
+      if ($words[$pos-1] && $words[$pos-1] =~ "[-\|]") {
+        $title = join(' ', @words[0 .. $pos-2]);
+      } elsif ($words[$pos+1] && $words[$pos+1] =~ "[-\|]") {
+        $title = join(' ', @words[$pos+2 .. $#words]);
+      }
+      ## Domain name not separated from title by common delimiters.
+      ## Here we choose to build our title on every word but the domain.
+      ## This will fail.
+        elsif ($pos == 0) {
+        $title = join(' ', @words[$pos+1 .. $#words]);
+      } elsif ($pos == $#words) {
+        $title  = join(' ', @words[0 .. $pos-1]);
+      }
+    }
+
+    return defined $pos
+           ? "[$words[$pos]] $title"
+           : "[".ucfirst($domain)."] $title";
+
+  ## Can we at least show some content type information?
+  } elsif ($res->content_type && $res->filename) {
+    return "[".ucfirst($domain)."] (".$res->content_type.") ".$res->filename."\n";
+  }
+
+  return 0; # Fall-through
+}
+
+### The below code is based on code copyrighted by
+### Simon Lundstöm (http://soy.se/code/)
+
+sub spotify_api_url {
+  my ($kind, $id) = @_;
+  return "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
+}
+
+sub spotify_parse_res {
+  my $res = shift;
+
+  if ($res->is_success) {
+    my ($xml, $info) = (XMLin($res->content), undef);
+
+    if ($xml->{'artist'}->{'name'}) {
+      $info .= $xml->{'artist'}->{'name'};
+    } else {
+      for (keys %{$xml->{'artist'}}) {
+        $info .= $_.", ";
+      }
+
+      # Trim off the last ", "
+      $info =~ s/, $//;
+    }
+
+    $info .= " - ";
+
+    if ($xml->{'name'}) {
+      $info .= $xml->{'name'};
+    }
+
+    if ($xml->{'album'}->{'name'}) {
+      $info .= " (" . $xml->{'album'}->{'name'} . ")";
+    }
+
+    return "[Spotify] $info";
+  }
+
+  return 0;
 }
 
 Irssi::timeout_add($API_TIMEOUT*60*1000, "show_commits", undef);
