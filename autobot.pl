@@ -1,12 +1,13 @@
 use strict;
 use warnings;
 
+use FindBin;
+use lib "$FindBin::Bin/lib";
+
 use DateTime;
 use Irssi;
 use JSON;
 
-use FindBin;
-use lib "$FindBin::Bin/lib";
 use Spotify;
 use TitleMangler;
 
