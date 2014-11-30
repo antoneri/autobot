@@ -5,6 +5,7 @@ use 5.014;
 use DateTime;
 use Irssi;
 use JSON;
+use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
 use XML::Simple qw(XMLin);
 
