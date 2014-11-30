@@ -22,12 +22,7 @@ our %IRSSI = (authors     => "Anton Eriksson",
 our $API_TIMEOUT = 2;  #minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION";
 our $DEBUG = 0;
-
-if ($DEBUG) {
-  our $CHANNEL = "#testautobot";
-} else {
-  our $CHANNEL = "#alvsbyn";
-}
+our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
 
 sub command {
   my ($type, $target, $message) = @_;
