@@ -14,7 +14,7 @@ our %IRSSI = (authors     => "Anton Eriksson",
               contact     => "anton\@rizon",
               name        => "autobot",
               date        => "2014-01-23",
-              updated     => "2014-11-29",
+              updated     => "2014-12-01",
               description => "IRC-bot",
               license     => "BSD 2-clause",
               url         => "http://www.github.com/antoneri/autobot/");
