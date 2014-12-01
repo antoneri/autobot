@@ -19,30 +19,31 @@ our %IRSSI = (authors     => "Anton Eriksson",
               license     => "BSD 2-clause",
               url         => "http://www.github.com/antoneri/autobot/");
 
-our $API_TIMEOUT = 2;  #minutes
-our $USER_AGENT = "$IRSSI{name}.pl/$VERSION";
+our $API_TIMEOUT = 2;  # Minutes
+our $USER_AGENT = "$IRSSI{name}.pl/$VERSION ";  # Must end with space
 our $DEBUG = 0;
 our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
 
 sub command {
   my ($type, $target, $message) = @_;
+
   my $server = Irssi::active_server();
+
   $server->command("$type $target $message");
 }
 
 sub message {
   my ($target, $message) = @_;
+
   command("MSG", $target, $message);
 }
 
 sub get_url {
   my ($url) = @_;
 
-  my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>5);
-  $ua->agent($USER_AGENT);
-  my $res = $ua->get($url);
+  my $ua = LWP::UserAgent->new(agent => $USER_AGENT, env_proxy => 1, keep_alive => 1, timeout => 5);
 
-  return $res;
+  return $ua->get($url);
 }
 
 sub sig_auto_op {
@@ -70,7 +71,7 @@ sub sig_dice {
     my @choices = split(';', $1);
     my $i = int(rand(scalar @choices));
 
-    $choices[$i] =~ s/^\s+|\s+$//g;  # trim whitespace
+    $choices[$i] =~ s/^\s+|\s+$//g;  # Trim whitespace
 
     message($target, "Tärningen bestämmer: $choices[$i]");
   }
@@ -87,6 +88,7 @@ sub sig_uri_handler{
 
     my $res = get_url(spotify_api_url($1, $2));
     my $spotify = spotify_parse_res($res);
+
     message($target, $spotify) if $spotify;
 
   } elsif ($msg =~ /((?:https?:\/\/)?
@@ -98,8 +100,8 @@ sub sig_uri_handler{
 
     my $res = get_url($1);
     my $title = formatted_title($res, $1, $2, $3);
-    message($target, $title) if $title;
 
+    message($target, $title) if $title;
   }
 }
 
@@ -115,6 +117,7 @@ sub show_commits {
     foreach my $c (@{$commits}) {
       message($CHANNEL, "[autobot] Commit: $c->{commit}->{message}");
     }
+
   }
 }
 
@@ -126,13 +129,12 @@ sub formatted_title {
   my $edit_distance = 2;
 
   if ($res->title) {
-    my $title = $res->title;
+    my ($title, $pos) = ($res->title, undef);
     my @words = split(' ', $title);
-    my $pos = undef;
 
     ## Try to find one-word domain.tld in title.
     for my $i (0 .. $#words) {
-        if (distance(lc($words[$i]), lc("$domain.$tld")) < $edit_distance) {
+      if (distance(lc($words[$i]), lc("$domain.$tld")) < $edit_distance) {
         $pos = $i;
         last;
       }
@@ -153,6 +155,7 @@ sub formatted_title {
       for my $i (0 .. $#words-1) {
         if (distance(lc(join(' ', @words[$i .. $i+1])), lc($domain))        < $edit_distance ||
             distance(lc(join(' ', @words[$i .. $i+1])), lc("$domain.$tld")) < $edit_distance) {
+
           splice(@words, $i, 2, join(' ', @words[$i .. $i+1]));
           $pos = $i;
           last;
@@ -170,22 +173,25 @@ sub formatted_title {
       } elsif ($words[$pos+1] && $words[$pos+1] =~ "[-\|]") {
         $title = join(' ', @words[$pos+2 .. $#words]);
       }
+
       ## Domain name not separated from title by common delimiters.
       ## Here we choose to build our title on every word but the domain.
       ## This will fail.
-        elsif ($pos == 0) {
+      elsif ($pos == 0) {
         $title = join(' ', @words[$pos+1 .. $#words]);
       } elsif ($pos == $#words) {
         $title  = join(' ', @words[0 .. $pos-1]);
       }
+
+      return "[$words[$pos]] $title";
     }
 
-    return defined $pos
-           ? "[$words[$pos]] $title"
-           : "[".ucfirst($domain)."] $title";
+    ## Couldn't find domain in title
+    return "[".ucfirst($domain)."] $title";
+  }
 
   ## Can we at least show some content type information?
-  } elsif ($res->content_type && $res->filename) {
+  elsif ($res->content_type && $res->filename) {
     return "[".ucfirst($domain)."] (".$res->content_type.") ".$res->filename."\n";
   }
 
@@ -197,6 +203,7 @@ sub formatted_title {
 
 sub spotify_api_url {
   my ($kind, $id) = @_;
+
   return "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
 }
 
