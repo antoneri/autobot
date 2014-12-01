@@ -146,7 +146,7 @@ sub sig_uri_handler{
     my $res = get_url($1);
     my $title = formatted_title($res, $1, $2, $3);
 
-    if $title {
+    if ($title) {
       message($target, $title);
       add_to_queue($nick, $url, $title);
     }
