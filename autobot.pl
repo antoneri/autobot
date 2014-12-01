@@ -148,7 +148,7 @@ sub sig_uri_handler{
 
     if ($title) {
       message($target, $title);
-      add_to_queue($nick, $url, $title);
+      add_to_queue($nick, $1, $title);
     }
   }
 }
