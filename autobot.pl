@@ -23,6 +23,10 @@ our $API_TIMEOUT = 2;  # Minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION ";  # Must end with space
 our $DEBUG = 0;
 our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
+our $MAX_QUEUE = 10;
+
+our %data;
+our @queue;
 
 sub command {
   my ($type, $target, $message) = @_;
@@ -44,6 +48,47 @@ sub get_url {
   my $ua = LWP::UserAgent->new(agent => $USER_AGENT, env_proxy => 1, keep_alive => 1, timeout => 5);
 
   return $ua->get($url);
+}
+
+sub add_to_queue {
+  my ($nick, $url, $title) = @_;
+
+  if (exists $data{$url}) {
+    push $data{$url}{nicks}, $nick;
+    return;
+  }
+
+  push @queue, $url;
+
+  if (scalar @queue > $MAX_QUEUE) {
+    my $expired = shift @queue;
+    delete $data{$expired};
+  }
+
+  $data{$url} = {
+    url => $url,
+    title => $title,
+    nicks => [$nick]
+  };
+
+}
+
+sub find_by_nick {
+  my $nick = shift;
+
+  my %submitted;
+
+  foreach my $key (keys %data) {
+    for my $n (@{$data{$key}{nicks}}) {
+
+      if ($n eq $nick) {
+        $submitted{$key} = $data{$key};
+      }
+
+    }
+  }
+
+  return %submitted;
 }
 
 sub sig_auto_op {
@@ -80,7 +125,7 @@ sub sig_dice {
 ### We don't want 'spotify_*' and 'formatted_title' to
 ### both react to spotify http uri:s
 sub sig_uri_handler{
-  my (undef, $msg, undef, undef, $target) = @_;
+  my (undef, $msg, $nick, undef, $target) = @_;
 
   if ($msg =~ /(?!https?:\/\/open\.spotify\.com\/|spotify:)
                (album|artist|track)[:\/]
@@ -101,7 +146,29 @@ sub sig_uri_handler{
     my $res = get_url($1);
     my $title = formatted_title($res, $1, $2, $3);
 
-    message($target, $title) if $title;
+    if $title {
+      message($target, $title);
+      add_to_queue($nick, $url, $title);
+    }
+  }
+}
+
+sub sig_links {
+  my (undef, $msg, undef, undef, $target) = @_;
+
+  if ($msg eq "!links") {
+    my $message;
+
+    foreach my $key (keys %data) {
+      $message = "Länk postad av ";
+      $message .= join(', ', @{$data{$key}{nicks}});
+      $message .= ": ";
+      $message .= $data{$key}{title};
+      $message .= " (" . $data{$key}{url} . ")";
+
+      message($target, $message);
+    }
+
   }
 }
 
@@ -244,4 +311,5 @@ Irssi::timeout_add($API_TIMEOUT*60*1000, "show_commits", undef);
 Irssi::signal_add("message public", "sig_auto_op");
 Irssi::signal_add("message public", "sig_dice");
 Irssi::signal_add("message public", "sig_uri_handler");
+Irssi::signal_add("message public", "sig_links");
 
