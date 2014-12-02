@@ -170,7 +170,7 @@ sub sig_links {
       message($target, $message);
     }
 
-  } elsif ($msg =~ /^!links\s+([a-zA-Z]+)/ix) {
+  } elsif ($msg =~ /^!links\s+([\w{}[\]\\\^`_\-]+)/ix) {
     my %submitted = find_by_nick($1);
 
     if (keys %submitted) {
