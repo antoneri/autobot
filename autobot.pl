@@ -160,7 +160,7 @@ sub sig_links {
 
   if ($msg eq "!links") {
 
-    foreach my $key (keys %data) {
+    for my $key (@queue) {
       $message = "Postad av ";
       $message .= join(', ', @{$data{$key}{nicks}});
       $message .= ": ";
