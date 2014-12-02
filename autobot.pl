@@ -23,7 +23,7 @@ our $API_TIMEOUT = 2;  # Minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION ";  # Must end with space
 our $DEBUG = 0;
 our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
-our $MAX_QUEUE = 10;
+our $MAX_QUEUE = 6;
 
 our %data;
 our @queue;
