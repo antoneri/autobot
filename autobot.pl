@@ -156,15 +156,31 @@ sub sig_uri_handler{
 sub sig_links {
   my (undef, $msg, undef, undef, $target) = @_;
 
+  my $message;
+
   if ($msg eq "!links") {
-    my $message;
 
     foreach my $key (keys %data) {
-      $message = "Länk postad av ";
+      $message = "Postad av ";
       $message .= join(', ', @{$data{$key}{nicks}});
       $message .= ": ";
       $message .= $data{$key}{title};
       $message .= " (" . $data{$key}{url} . ")";
+
+      message($target, $message);
+    }
+
+  } elsif ($msg =~ /^!links\s+([a-zA-Z]+)/ix) {
+    %submitted = find_by_nick($1);
+
+    if (keys %submitted) {
+      message($target, "Länkar postade av $1:");
+    }
+
+    foreach my $key (keys %submitted) {
+      $message = $submitted{$key}{url};
+      $message .= " - ";
+      $message .= $submitted{$key}{title};
 
       message($target, $message);
     }
