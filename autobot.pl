@@ -171,7 +171,7 @@ sub sig_links {
     }
 
   } elsif ($msg =~ /^!links\s+([a-zA-Z]+)/ix) {
-    %submitted = find_by_nick($1);
+    my %submitted = find_by_nick($1);
 
     if (keys %submitted) {
       message($target, "Länkar postade av $1:");
