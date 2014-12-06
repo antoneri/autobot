@@ -94,7 +94,7 @@ sub find_by_nick {
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, $target) = @_;
 
-  my @opers = qw(Ades anton Angan hunky\\ Tomas);
+  my @opers = qw(Ades anton Angan hunky\\ Tomas-);
   my %hashop = map { $_ => 1 } @opers;
 
   if ($msg eq "op plz") {
