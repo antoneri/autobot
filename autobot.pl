@@ -275,7 +275,18 @@ sub formatted_title {
 
   ## Can we at least show some content type information?
   elsif ($res->content_type && $res->filename) {
-    return "[".ucfirst($domain)."] (".$res->content_type.") ".$res->filename."\n";
+    my $info = "(".$res->content_type.") ".$res->filename;
+
+    ## Special cases
+    if ($domain eq "akamihd") {
+      $domain = "Facebook CDN";
+    } elsif ($domain eq "deviantart") {
+      $domain = "DeviantArt";
+    } else {
+      $domain = ucfirst $domain;
+    }
+
+    return "[$domain] $info";
   }
 
   return 0; # Fall-through
