@@ -134,7 +134,7 @@ sub sig_uri_handler{
     my $res = get_url(spotify_api_url($1, $2));
     my $spotify = spotify_parse_res($res);
 
-    message($target, $spotify) if $spotify;
+    message($target, "$spotify - spotify:$kind:$id") if $spotify;
 
   } elsif ($msg =~ /((?:https?:\/\/)?
                      (?:[\w\d-]+\.)*
