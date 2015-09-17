@@ -9,7 +9,7 @@ use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
 use XML::Simple qw(XMLin);
 
-our $VERSION = "0.2";
+our $VERSION = "0.3";
 our %IRSSI = (authors     => "Anton Eriksson",
               contact     => "anton\@rizon",
               name        => "autobot",
@@ -23,10 +23,6 @@ our $API_TIMEOUT = 2;  # Minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION ";  # Must end with space
 our $DEBUG = 0;
 our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
-our $MAX_QUEUE = 6;
-
-our %data;
-our @queue;
 
 sub command {
   my ($type, $target, $message) = @_;
@@ -50,47 +46,6 @@ sub get_url {
   return $ua->get($url);
 }
 
-sub add_to_queue {
-  my ($nick, $url, $title) = @_;
-
-  if (exists $data{$url}) {
-    push $data{$url}{nicks}, $nick;
-    return;
-  }
-
-  push @queue, $url;
-
-  if (scalar @queue > $MAX_QUEUE) {
-    my $expired = shift @queue;
-    delete $data{$expired};
-  }
-
-  $data{$url} = {
-    url => $url,
-    title => $title,
-    nicks => [$nick]
-  };
-
-}
-
-sub find_by_nick {
-  my $nick = shift;
-
-  my %submitted;
-
-  foreach my $key (keys %data) {
-    for my $n (@{$data{$key}{nicks}}) {
-
-      if ($n eq $nick) {
-        $submitted{$key} = $data{$key};
-      }
-
-    }
-  }
-
-  return %submitted;
-}
-
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, $target) = @_;
 
@@ -99,7 +54,7 @@ sub sig_auto_op {
 
   if ($msg eq "op plz") {
 
-    if (exists($hashop{$nick})) {
+    if (exists $hashop{$nick}) {
       command("OP", $target, $nick);
     } else {
       message($target, "Nope.");
@@ -134,7 +89,9 @@ sub sig_uri_handler{
     my $res = get_url(spotify_api_url($1, $2));
     my $spotify = spotify_parse_res($res);
 
-    message($target, "$spotify - spotify:$1:$2") if $spotify;
+    if ($spotify) {
+      message($target, "$spotify - spotify:$1:$2");
+    }
 
   } elsif ($msg =~ /((?:https?:\/\/)?
                      (?:[\w\d-]+\.)*
@@ -148,43 +105,7 @@ sub sig_uri_handler{
 
     if ($title) {
       message($target, $title);
-      add_to_queue($nick, $1, $title);
     }
-  }
-}
-
-sub sig_links {
-  my (undef, $msg, undef, undef, $target) = @_;
-
-  my $message;
-
-  if ($msg eq "!links") {
-
-    for my $key (@queue) {
-      $message = "Postad av ";
-      $message .= join(', ', @{$data{$key}{nicks}});
-      $message .= ": ";
-      $message .= $data{$key}{title};
-      $message .= " (" . $data{$key}{url} . ")";
-
-      message($target, $message);
-    }
-
-  } elsif ($msg =~ /^!links\s+([\w{}[\]\\\^`_\-]+)/ix) {
-    my %submitted = find_by_nick($1);
-
-    if (keys %submitted) {
-      message($target, "Länkar postade av $1:");
-    }
-
-    foreach my $key (keys %submitted) {
-      $message = $submitted{$key}{url};
-      $message .= " - ";
-      $message .= $submitted{$key}{title};
-
-      message($target, $message);
-    }
-
   }
 }
 
@@ -338,5 +259,4 @@ Irssi::timeout_add($API_TIMEOUT*60*1000, "show_commits", undef);
 Irssi::signal_add("message public", "sig_auto_op");
 Irssi::signal_add("message public", "sig_dice");
 Irssi::signal_add("message public", "sig_uri_handler");
-Irssi::signal_add("message public", "sig_links");
 
