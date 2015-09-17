@@ -2,9 +2,7 @@ use strict;
 use warnings;
 use 5.014;
 
-use DateTime;
 use Irssi;
-use JSON;
 use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
 use XML::Simple qw(XMLin);
@@ -19,7 +17,6 @@ our %IRSSI = (authors     => "Anton Eriksson",
               license     => "BSD 2-clause",
               url         => "http://www.github.com/antoneri/autobot/");
 
-our $API_TIMEOUT = 2;  # Minutes
 our $USER_AGENT = "$IRSSI{name}.pl/$VERSION ";  # Must end with space
 our $DEBUG = 0;
 our $CHANNEL = ($DEBUG) ? "#testautobot" : "#alvsbyn";
@@ -106,22 +103,6 @@ sub sig_uri_handler{
     if ($title) {
       message($target, $title);
     }
-  }
-}
-
-sub show_commits {
-  my $dt = DateTime->now->set_time_zone("GMT");
-  $dt->subtract(minutes => $API_TIMEOUT);
-
-  my $res = get_url("https://api.github.com/repos/antoneri/autobot/commits?since=${dt}Z");
-
-  if ($res->is_success) {
-    my $commits = decode_json($res->decoded_content);
-
-    foreach my $c (@{$commits}) {
-      message($CHANNEL, "[autobot] Commit: $c->{commit}->{message}");
-    }
-
   }
 }
 
@@ -255,7 +236,6 @@ sub spotify_parse_res {
   return 0;
 }
 
-Irssi::timeout_add($API_TIMEOUT*60*1000, "show_commits", undef);
 Irssi::signal_add("message public", "sig_auto_op");
 Irssi::signal_add("message public", "sig_dice");
 Irssi::signal_add("message public", "sig_uri_handler");
