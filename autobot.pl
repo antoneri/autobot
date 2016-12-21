@@ -5,7 +5,7 @@ use 5.014;
 use Irssi;
 use LWP::UserAgent;
 use Text::Levenshtein qw(distance);
-use XML::Simple qw(XMLin);
+use JSON qw(decode_json);
 
 our $VERSION = "0.3";
 our %IRSSI = (authors     => "Anton Eriksson",
@@ -46,17 +46,13 @@ sub get_url {
 sub sig_auto_op {
   my (undef, $msg, $nick, undef, $target) = @_;
 
-  my @opers = qw(Ades anton Angan hunky\\ Tomas-);
+  my @opers = qw(Ades anton Tomas-);
   my %hashop = map { $_ => 1 } @opers;
 
   if ($msg eq "op plz") {
-
     if (exists $hashop{$nick}) {
       command("OP", $target, $nick);
-    } else {
-      message($target, "Nope.");
     }
-
   }
 }
 
@@ -87,7 +83,7 @@ sub sig_uri_handler{
     my $spotify = spotify_parse_res($res);
 
     if ($spotify) {
-      message($target, "$spotify - spotify:$1:$2");
+      message($target, $spotify);
     }
 
   } elsif ($msg =~ /((?:https?:\/\/)?
@@ -181,7 +177,7 @@ sub formatted_title {
 
     ## Special cases
     if ($domain eq "akamihd") {
-      $domain = "Facebook CDN";
+      $domain = "Facebook";
     } elsif ($domain eq "deviantart") {
       $domain = "DeviantArt";
     } else {
@@ -200,34 +196,33 @@ sub formatted_title {
 sub spotify_api_url {
   my ($kind, $id) = @_;
 
-  return "http://ws.spotify.com/lookup/1/?uri=spotify:$kind:$id";
+  return "https://api.spotify.com/v1/${kind}s/$id";
 }
 
 sub spotify_parse_res {
   my $res = shift;
 
   if ($res->is_success) {
-    my ($xml, $info) = (XMLin($res->content), undef);
+    my ($json, $info) = (decode_json($res->content), undef);
 
-    if ($xml->{'artist'}->{'name'}) {
-      $info .= $xml->{'artist'}->{'name'};
+    if (scalar @{$json->{'artists'}} == 1) {
+	$info .= $json->{'artists'}[0]->{'name'};
     } else {
-      for (keys %{$xml->{'artist'}}) {
-        $info .= $_.", ";
-      }
+	foreach my $artist (@{$json->{'artists'}}) {
+	    $info .= $artist->{'name'}.", ";
+	}
 
-      # Trim off the last ", "
-      $info =~ s/, $//;
+	$info =~ s/, $//;
     }
 
     $info .= " - ";
 
-    if ($xml->{'name'}) {
-      $info .= $xml->{'name'};
+    if ($json->{'name'}) {
+	$info .= $json->{'name'};
     }
 
-    if ($xml->{'album'}->{'name'}) {
-      $info .= " (" . $xml->{'album'}->{'name'} . ")";
+    if ($json->{'album'}->{'name'}) {
+	$info .= " (" . $json->{'album'}->{'name'} . ")";
     }
 
     return "[Spotify] $info";
